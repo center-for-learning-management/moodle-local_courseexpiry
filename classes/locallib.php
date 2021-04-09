@@ -131,9 +131,6 @@ class locallib {
                 continue;
             }
             $users = \get_enrolled_users($ctx, 'moodle/course:update');
-            if (empty($users)) {
-                $users = \get_admins();
-            }
             foreach ($users as $user) {
                 if (!in_array($user->id, $notified)) {
                     $notified[] = $user->id;
