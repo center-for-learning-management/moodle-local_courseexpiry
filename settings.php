@@ -29,11 +29,32 @@ if ($hassiteconfig) {
     $ADMIN->add('local_courseexpiry', $settings);
 
     // Set times in mmdd-Format when a notification should be sent.
-    $settings->add(new admin_setting_configtextarea('local_courseexpiry/checkstops', get_string('checkstops', 'local_courseexpiry'), get_string('checkstops:description', 'local_courseexpiry'), "0901\n0201", PARAM_TEXT));
-
-    // Set parameters how to determine expired courses.
-
-    // Set parameters to exclude courses from expiration.
+    // By default this is at 1st of September and 1st of February.
+    $settings->add(
+        new admin_setting_configtextarea(
+            'local_courseexpiry/checkstops',
+            get_string('checkstops', 'local_courseexpiry'),
+            get_string('checkstops:description', 'local_courseexpiry'),
+            "0901\n0201",
+            PARAM_TEXT
+        )
+    );
 
     // Set parameter how long teachers have time to opt out from deletion.
+    $ranges = array();
+    $ranges[0] = get_string('timetodeletionweeks_immediate', 'local_courseexpiry');
+    $ranges[1] = get_string('timetodeletionweeks_single', 'local_courseexpiry');
+    for ($a = 2; $a < 10; $a++) {
+        $ranges[$a] = get_string('timetodeletionweeks', 'local_courseexpiry', array('weeks' => $a));
+    }
+
+    $settings->add(
+        new admin_setting_configselect(
+            'local_courseexpiry/timetodeletionweeks',
+            get_string('timetodeletion', 'local_courseexpiry'),
+            get_string('timetodeletion:description', 'local_courseexpiry'),
+            4,
+            $ranges
+        )
+    );
 }

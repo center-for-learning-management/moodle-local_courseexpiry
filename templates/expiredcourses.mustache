@@ -1,0 +1,92 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_courseexpiry/expiredcourses
+
+    The purpose of this template is to render the list of expired courses.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * wwwroot
+    * courses
+
+    Example context (json):
+    {
+        "wwwroot": "http://.......",
+        "courses": [
+            {
+                id: 1
+                fullname: "Course 1",
+                status: 0,
+                timedelete: 1618002714,
+            },
+            {
+                id: 2
+                fullname: "Course 2",
+                status: 0,
+                timedelete: 1618002714,
+            }
+        ],
+    }
+}}
+<div id="local_courseexpiry_{{uniqid}}" class="local_courseexpiry">
+    <p>{{#str}} expired_courses:explanation, local_courseexpiry {{/str}}</p>
+    <table class="generaltable">
+        <thead>
+            <tr>
+                <td>{{str}} status, local_courseexpiry {{/str}}</td>
+                <td>{{str}} name {{/str}}</td>
+                <td>{{str}} timedelete, local_courseexpiry {{/str}}</td>
+            </tr>
+        </thead>
+        <tbody>
+            {{#courses}}
+                <tr class="tr-{{uniqid}}-{{id}}">
+                    <td class="status">
+                        <a href="#" class="status-{{status}}"
+                           onclick="require(['local_courseexpiry/main'], function(M) { M.toggle('{{uniqid}}', {{id}}); }); return false;">
+                            {{#status}}
+                                <i class="fa fa-exclamation" style="color: red;"></i>
+                            {{/status}}
+                            {{^status}}
+                                <i class="fa fa-check" style="color: darkgreen;"></i>
+                            {{/status}}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{wwwroot}}/course/view.php?id={{id}}">
+                            {{fullname}}
+                        </a>
+                    </td>
+                    <td class="timedelete">{{#userdate}} {{timedelete}}, %d. $B %Y {{/userdate}}</td>
+                </tr>
+            {{/courses}}
+            {{^courses}}
+                <tr>
+                    <td colspan="3">
+                        {{#str}} listempty, local_courseexpiry {{/str}}
+                    </td>
+                </tr>
+            {{/courses}}
+        </tbody>
+    </table>
+</div>
