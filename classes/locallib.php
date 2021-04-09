@@ -76,13 +76,16 @@ class locallib {
                         time(),
                         strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
                     ),
-                    $inparams
+                    $inparams,
+                    array(
+                        time()
+                    )
                 );
 
                 $sql = "UPDATE {local_courseexpiry}
                             SET status = 1, timemodified = ?, timedelete = ?
                             WHERE courseid $insql
-                                AND timedelete = 0";
+                                AND timedelete < ?";
 
                 $DB->execute($sql, $inparams);
             }
