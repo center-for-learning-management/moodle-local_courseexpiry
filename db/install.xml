@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/courseexpiry/db" VERSION="20200300" COMMENT="XMLDB file for Moodle local/courseexpiry"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_courseexpiry" COMMENT="List of expired courses">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true" COMMENT="expirationid"/>
+          <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="courseid"/>
+          <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="timecreated"/>
+          <FIELD NAME="delayto" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="delay until timestamp"/>
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
