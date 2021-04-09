@@ -29,17 +29,16 @@ class local_courseexpiry_external extends external_api {
     public static function toggle_parameters() {
         return new external_function_parameters(array(
             'courseid' => new external_value(PARAM_INT, 'the course id'),
-            'setto' => new external_value(PARAM_INT, '1 or 0'),
+            'status' => new external_value(PARAM_INT, '1 or 0'),
         ));
     }
 
     /**
      * Toggle status.
      */
-    public static function toggle($courseid, $setto) {
+    public static function toggle($courseid, $status) {
         global $DB, $USER;
-        $PAGE->set_context(context_system::instance());
-        $params = self::validate_parameters(self::toggle_parameters(), array('courseid' => $courseid, 'setto' => $setto));
+        $params = self::validate_parameters(self::toggle_parameters(), array('courseid' => $courseid, 'status' => $status));
         $ret = array(
             'courseid' => 0,
             'status' => 0,
@@ -49,6 +48,7 @@ class local_courseexpiry_external extends external_api {
         if (in_array($params['status'], array(0,1)) && has_capability('moodle/course:update', $ctx, $USER, false)) {
             $DB->set_field('local_courseexpiry', 'status', $params['status'], array('courseid' => $params['courseid']));
             $ret['courseid'] = $params['courseid'];
+            $ret['status'] = $params['status'];
         }
 
         return $ret;

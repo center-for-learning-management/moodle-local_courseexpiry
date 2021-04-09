@@ -27,8 +27,8 @@ require_login();
 $PAGE->set_context(\context_system::instance());
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_url('/local/courseexpiry/expiredcourses.php', array());
-$PAGE->set_title(get_string('expired_coursesd', 'local_courseexpiry'));
-$PAGE->set_heading(get_string('expired_coursesd', 'local_courseexpiry'));
+$PAGE->set_title(get_string('expired_courses', 'local_courseexpiry'));
+$PAGE->set_heading(get_string('expired_courses', 'local_courseexpiry'));
 
 echo $OUTPUT->header();
 
@@ -45,8 +45,9 @@ list($insql, $inparams) = $DB->get_in_or_equal($editingcourseids);
 $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
             FROM {course} c, {local_courseexpiry} ce
             WHERE c.id = ce.courseid
+                AND timedelete > 0
                 AND c.id $insql";
-$courses = $DB->get_records_sql($sql, $inparams);
+$courses = array_values($DB->get_records_sql($sql, $inparams));
 
 $params = array(
     'courses' => $courses,

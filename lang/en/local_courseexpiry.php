@@ -28,6 +28,7 @@ $string['privacy:metadata'] = 'This plugin does not store any personal data';
 $string['checkstops'] = 'Checkstops';
 $string['checkstops:description'] = 'Specifies dates when courses should be checked for expiry. Enter line by line in mmdd-format.';
 
+$string['excludedremoval'] = 'Excluded from removal';
 $string['expired_courses'] = 'Expired Courses';
 $string['expired_courses:explanation'] = 'The following list shows all expired courses, that will be deleted soon. Please uncheck all courses, that you want to keep.';
 
@@ -52,9 +53,10 @@ $string['notify:html'] = '
     </p>';
 
 $string['status'] = 'Status';
+$string['scheduledremoval'] = 'Scheduled for removal';
 
 $string['task'] = 'Course Expiry Task';
-$string['timedelete'] = 'Time of deletion';
+$string['timedelete'] = 'Day of deletion';
 $string['timetodeletion'] = 'Time to deletion';
 $string['timetodeletion:description'] = 'Specifies how many weeks the task will wait before courses are really deleted.';
 $string['timetodeletionweeks_immediate'] = 'immediately';

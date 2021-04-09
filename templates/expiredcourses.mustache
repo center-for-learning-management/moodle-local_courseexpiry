@@ -50,19 +50,25 @@
 }}
 <div id="local_courseexpiry_{{uniqid}}" class="local_courseexpiry">
     <p>{{#str}} expired_courses:explanation, local_courseexpiry {{/str}}</p>
+    <p>
+        <i class="fa fa-exclamation" style="color: red;"></i>
+        {{#str}} scheduledremoval, local_courseexpiry {{/str}}
+        <i class="fa fa-check" style="color: darkgreen;"></i>
+        {{#str}} excludedremoval, local_courseexpiry {{/str}}
+    </p>
     <table class="generaltable">
         <thead>
             <tr>
-                <td>{{str}} status, local_courseexpiry {{/str}}</td>
-                <td>{{str}} name {{/str}}</td>
-                <td>{{str}} timedelete, local_courseexpiry {{/str}}</td>
+                <td align="center">{{#str}} status, local_courseexpiry {{/str}}</td>
+                <td>{{#str}} name {{/str}}</td>
+                <td>{{#str}} timedelete, local_courseexpiry {{/str}}</td>
             </tr>
         </thead>
         <tbody>
             {{#courses}}
-                <tr class="tr-{{uniqid}}-{{id}}">
+                <tr id="tr-{{uniqid}}-{{id}}">
                     <td class="status">
-                        <a href="#" class="status-{{status}}"
+                        <a href="#" class="status-{{status}} btn btn-block btn-secondary"
                            onclick="require(['local_courseexpiry/main'], function(M) { M.toggle('{{uniqid}}', {{id}}); }); return false;">
                             {{#status}}
                                 <i class="fa fa-exclamation" style="color: red;"></i>
@@ -77,7 +83,7 @@
                             {{fullname}}
                         </a>
                     </td>
-                    <td class="timedelete">{{#userdate}} {{timedelete}}, %d. $B %Y {{/userdate}}</td>
+                    <td class="timedelete">{{#userdate}} {{timedelete}}, %d. %B %Y {{/userdate}}</td>
                 </tr>
             {{/courses}}
             {{^courses}}
