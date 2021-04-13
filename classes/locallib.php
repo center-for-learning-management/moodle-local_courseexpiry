@@ -113,6 +113,29 @@ class locallib {
         }
     }
     /**
+     * Return all courses of a user that are expired.
+     */
+    public static function get_expired_courses() {
+        global $DB, $USER;
+        $usercourses = \enrol_get_all_users_courses($USER->id, true);
+        $editingcourseids = array();
+        foreach ($usercourses as $usercourse) {
+            $ctx = \context_course::instance($usercourse->id);
+            if (has_capability('moodle/course:update', $ctx, $USER, false)) {
+                $editingcourseids[] = $usercourse->id;
+            }
+        }
+
+        list($insql, $inparams) = $DB->get_in_or_equal($editingcourseids);
+        $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
+                    FROM {course} c, {local_courseexpiry} ce
+                    WHERE c.id = ce.courseid
+                        AND timedelete > 0
+                        AND c.id $insql";
+        $courses = array_values($DB->get_records_sql($sql, $inparams));
+        return $courses;
+    }
+    /**
      * Notifies all editingteachers about upcoming deletions.
      * @param debug show debug output.
      */

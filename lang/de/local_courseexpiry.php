@@ -21,14 +21,14 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Kurs-Ablaufdatum';
-$string['pluginname:settings'] = 'Kurs-Ablaufdatum Einstellungen';
+$string['pluginname'] = 'Kurs-Ablauflöschung';
+$string['pluginname:settings'] = 'Kurs-Ablauflöschung Einstellungen';
 
 $string['checkstops'] = 'Prüftage';
 $string['checkstops:description'] = 'Gibt jene Tage an, an denen die Kurse auf ihr Ablaufdatum geprüft werden. Geben Sie mehrere Tage im Format mmdd zeilenweise ein.';
 
 $string['excludedremoval'] = 'Von der Löschung ausgenommen';
-$string['expired_courses'] = 'Abgelaufene Kurse';
+$string['expired_courses'] = 'Zu löschende Kurse';
 $string['expired_courses:explanation'] = 'Die folgende Liste zeigt alle abgelaufenen Kurse, für die eine automatische Löschung geplant wurde. Bitte markieren Sie jene Kurse, die Sie behalten möchten.';
 
 $string['listempty'] = 'Es wurden keine Kurse für die Löschung eingeplant.';
