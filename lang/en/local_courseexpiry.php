@@ -27,6 +27,8 @@ $string['privacy:metadata'] = 'This plugin does not store any personal data';
 $string['checkstops'] = 'Checkstops';
 $string['checkstops:description'] = 'Specifies dates when courses should be checked for expiry. Enter line by line in mmdd-format.';
 
+$string['delete'] = 'Delete';
+
 $string['excludedremoval'] = 'Excluded from removal';
 $string['expired_courses'] = 'Expired Courses';
 $string['expired_courses:explanation'] = 'The following list shows all expired courses, that will be deleted soon. Please uncheck all courses, that you want to keep.';
@@ -35,6 +37,8 @@ $string['ignorecategories'] = 'Ignore Categories';
 $string['ignorecategories:description'] = 'Enter here categories, that should be ignored by this plugin. Delimit multiple ids by a comma.';
 $string['ignorecourses'] = 'Ignore Courses';
 $string['ignorecourses:description'] = 'Enter here courseids, that should be ignored by this plugin. Delimit multiple ids by a comma.';
+
+$string['keep'] = 'Keep';
 
 $string['listempty'] = 'No courses are scheduled for deletion';
 
