@@ -22,7 +22,6 @@
  */
 
 $string['pluginname'] = 'Kurs-Ablauflöschung';
-$string['pluginname:settings'] = 'Kurs-Ablauflöschung Einstellungen';
 
 $string['checkstops'] = 'Prüftage';
 $string['checkstops:description'] = 'Gibt jene Tage an, an denen die Kurse auf ihr Ablaufdatum geprüft werden. Geben Sie mehrere Tage im Format mmdd zeilenweise ein.';
@@ -30,6 +29,11 @@ $string['checkstops:description'] = 'Gibt jene Tage an, an denen die Kurse auf i
 $string['excludedremoval'] = 'Von der Löschung ausgenommen';
 $string['expired_courses'] = 'Zu löschende Kurse';
 $string['expired_courses:explanation'] = 'Die folgende Liste zeigt alle abgelaufenen Kurse, für die eine automatische Löschung geplant wurde. Bitte markieren Sie jene Kurse, die Sie behalten möchten.';
+
+$string['ignorecategories'] = 'Ignoriere Kursbereiche';
+$string['ignorecategories:description'] = 'Geben Sie hier Kursbereiche ein, die von diesem Plugin ignoriert werden sollen. Trennen Sie mehrere IDs mit einem Beistrich.';
+$string['ignorecourses'] = 'Ignoriere Kurse';
+$string['ignorecourses:description'] = 'Geben Sie hier Kurse ein, die von diesem Plugin ignoriert werden sollen. Trennen Sie mehrere IDs mit einem Beistrich.';
 
 $string['listempty'] = 'Es wurden keine Kurse für die Löschung eingeplant.';
 

@@ -62,13 +62,32 @@ class locallib {
                 echo "Update local_courseexpiry and schedule deletion of expired courses<br />";
             }
 
+            $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
+            $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
+
             $sql = "SELECT id
                         FROM {course}
                         WHERE enddate > 0
                             AND enddate < ?";
 
-
-            $expiredcourseids = array_keys($DB->get_records_sql($sql, array(time())));
+            $_expiredcourseids = array_keys($DB->get_records_sql($sql, array(time())));
+            $expiredcourseids = array();
+            foreach ($_expiredcourseids as $courseid) {
+                if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
+                    continue;
+                }
+                if (count($ignorecategories) > 0) {
+                    $ctx = \context_course::instance($courseid);
+                    // Remove courseid from path for comparison.
+                    $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
+                    foreach ($ignoredcategories as $cat) {
+                        if (strpos($path, '/' . $cat . '/')) {
+                            continue 2;
+                        }
+                    }
+                }
+                $expiredcourseids[] = $courseid;
+            }
             if (count($expiredcourseids) > 0) {
                 list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
                 $inparams = array_merge(
@@ -81,7 +100,6 @@ class locallib {
                         time()
                     )
                 );
-
                 $sql = "UPDATE {local_courseexpiry}
                             SET status = 1, timemodified = ?, timedelete = ?
                             WHERE courseid $insql
@@ -99,7 +117,9 @@ class locallib {
             time()
         );
         $deletecourses = $DB->get_records_sql($sql, $params);
-        echo count($deletecourses) . " courses need to be deleted<br />";
+        if ($debug) {
+            echo count($deletecourses) . " courses need to be deleted<br />";
+        }
         foreach ($deletecourses as $deletecourse) {
             if ($debug) {
                 echo "Remove course #$deletecourse->id<br />";
@@ -163,8 +183,8 @@ class locallib {
                     $user->fullname = \fullname($user, true);
                     $user->timetodeletionweeks = $timetodeletionweeks;
                     $user->wwwroot = $CFG->wwwroot;
-                    $subject = get_string('notify:subject', 'local_courseexpiry', $user->lang, $user);
-                    $messagehtml = get_string('notify:html', 'local_courseexpiry', $user->lang, $user);
+                    $subject = get_string('notify:subject', 'local_courseexpiry', $user, $user->lang);
+                    $messagehtml = get_string('notify:html', 'local_courseexpiry', $user, $user->lang);
                     $messagetext = \html_to_text($messagehtml);
                     \email_to_user($user, $fromuser, $subject, $messagetext, $messagehtml, "", true);
                     if ($debug) {
