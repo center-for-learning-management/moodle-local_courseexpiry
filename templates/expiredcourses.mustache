@@ -63,7 +63,7 @@
             {{#courses}}
                 <tr id="tr-{{uniqid}}-{{id}}">
                     <td style="text-align: center;">
-                        <a href="#" id="status-{{uniqid}}-delete" class=""
+                        <a href="#" id="status-{{uniqid}}-{{id}}-delete" class=""
                            onclick="require(['local_courseexpiry/main'], function(M) { M.toggle('{{uniqid}}', {{id}}, 'delete'); }); return false;">
                             {{#status}}
                                 <i class="fa fa-check-square" style="color: black;"></i>
@@ -74,7 +74,7 @@
                         </a>
                     </td>
                     <td style="text-align: center;">
-                        <a href="#" id="status-{{uniqid}}-keep" class=""
+                        <a href="#" id="status-{{uniqid}}-{{id}}-keep" class=""
                            onclick="require(['local_courseexpiry/main'], function(M) { M.toggle('{{uniqid}}', {{id}}, 'keep'); }); return false;">
                             {{#status}}
                                 <i class="fa fa-square" style="color: darkgray;"></i>

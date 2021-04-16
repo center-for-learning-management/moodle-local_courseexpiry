@@ -22,11 +22,11 @@ define(
                         var checksquare = $('<i class="fa fa-check-square" style="color: black;"></i>');
                         setTimeout(function() {
                             if (result.status == 1) {
-                                $('#status-' + uniqid + '-delete').empty().append(checksquare);
-                                $('#status-' + uniqid + '-keep').empty().append(check);
+                                $('#status-' + uniqid + '-' + courseid + '-delete').empty().append(checksquare);
+                                $('#status-' + uniqid + '-' + courseid + '-keep').empty().append(check);
                             } else {
-                                $('#status-' + uniqid + '-delete').empty().append(check);
-                                $('#status-' + uniqid + '-keep').empty().append(checksquare);
+                                $('#status-' + uniqid + '-' + courseid + '-delete').empty().append(check);
+                                $('#status-' + uniqid + '-' + courseid + '-keep').empty().append(checksquare);
                             }
                         }, 500);
                     }
