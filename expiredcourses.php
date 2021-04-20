@@ -34,6 +34,9 @@ $PAGE->navbar->add(get_string('expired_courses', 'local_courseexpiry'), $PAGE->u
 echo $OUTPUT->header();
 
 $courses = \local_courseexpiry\locallib::get_expired_courses();
+$lasttimedelete = \local_courseexpiry\locallib::get_lasttimedelete($courses);
+\set_user_preference('block_courseexpiry_minimizeuntil', $lasttimedelete);
+
 $params = array(
     'courses' => $courses,
     'wwwroot' => $CFG->wwwroot,

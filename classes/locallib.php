@@ -156,6 +156,23 @@ class locallib {
         return $courses;
     }
     /**
+     * Get the timestamp when the last course will be deleted.
+     * @param courses list of courses retrieved by self::get_expired_courses()
+     */
+    public static function get_lasttimedelete($courses = array()) {
+        $lasttimedelete = 0;
+        if (count($courses) == 0) {
+            $courses = self::get_expired_courses();
+        }
+
+        foreach ($courses as $course) {
+            if ($lasttimedelete < $course->timedelete) {
+                $lasttimedelete = $course->timedelete;
+            }
+        }
+        return $lasttimedelete;
+    }
+    /**
      * Notifies all editingteachers about upcoming deletions.
      * @param debug show debug output.
      */
