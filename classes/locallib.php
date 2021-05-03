@@ -138,6 +138,8 @@ class locallib {
     public static function get_expired_courses() {
         global $DB, $USER;
         $usercourses = \enrol_get_all_users_courses($USER->id, true);
+
+        if (count($usercourses) == 0) return $usercourses;
         $editingcourseids = array();
         foreach ($usercourses as $usercourse) {
             $ctx = \context_course::instance($usercourse->id);
