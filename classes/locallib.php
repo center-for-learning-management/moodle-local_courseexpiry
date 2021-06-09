@@ -148,14 +148,17 @@ class locallib {
             }
         }
 
-        list($insql, $inparams) = $DB->get_in_or_equal($editingcourseids);
-        $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
-                    FROM {course} c, {local_courseexpiry} ce
-                    WHERE c.id = ce.courseid
-                        AND timedelete > 0
-                        AND c.id $insql";
-        $courses = array_values($DB->get_records_sql($sql, $inparams));
-        return $courses;
+        if (count($editingcourseids) > 0) {
+            list($insql, $inparams) = $DB->get_in_or_equal($editingcourseids);
+            $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
+                        FROM {course} c, {local_courseexpiry} ce
+                        WHERE c.id = ce.courseid
+                            AND timedelete > 0
+                            AND c.id $insql";
+            $courses = array_values($DB->get_records_sql($sql, $inparams));
+            return $courses;
+        }
+        return [];
     }
     /**
      * Get the timestamp when the last course will be deleted.
