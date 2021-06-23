@@ -80,7 +80,7 @@ class locallib {
                     $ctx = \context_course::instance($courseid);
                     // Remove courseid from path for comparison.
                     $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
-                    foreach ($ignoredcategories as $cat) {
+                    foreach ($ignorecategories as $cat) {
                         if (strpos($path, '/' . $cat . '/')) {
                             continue 2;
                         }
