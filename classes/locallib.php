@@ -191,6 +191,7 @@ class locallib {
         $courses = $DB->get_records('local_courseexpiry', array('status' => 1));
         $fromuser = \core_user::get_support_user();
         $notified = array(); // keep notified users, we only notify each user once.
+        $stringman = get_string_manager();
         foreach ($courses as $course) {
             $ctx = \context_course::instance($course->courseid, 'IGNORE_MISSING');
             if (empty($ctx->id)) {
@@ -205,8 +206,8 @@ class locallib {
                     $user->fullname = \fullname($user, true);
                     $user->timetodeletionweeks = $timetodeletionweeks;
                     $user->wwwroot = $CFG->wwwroot;
-                    $subject = get_string('notify:subject', 'local_courseexpiry', $user, $user->lang);
-                    $messagehtml = get_string('notify:html', 'local_courseexpiry', $user, $user->lang);
+                    $subject = $stringman->get_string('notify:subject', 'local_courseexpiry', $user, $user->lang);
+                    $messagehtml = $stringman->get_string('notify:html', 'local_courseexpiry', $user, $user->lang);
                     $messagetext = \html_to_text($messagehtml);
                     \email_to_user($user, $fromuser, $subject, $messagetext, $messagehtml, "", true);
                     if ($debug) {
