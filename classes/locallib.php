@@ -109,6 +109,7 @@ class locallib {
             }
         }
 
+        // Now select all courses that should be deleted.
         $sql = "SELECT *
                     FROM {local_courseexpiry}
                     WHERE status = ? AND timedelete < ?";
@@ -127,6 +128,15 @@ class locallib {
             \delete_course($deletecourse->courseid, false);
             $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
         }
+        // Now remove the delete-flag of those entries, that should be kept instead of deleted.
+        $sql = "UPDATE {local_courseexpiry}
+                    SET timedelete = 0
+                    WHERE timedelete < ?
+                        AND status = 0";
+        $params = [
+            time()
+        ];
+        $DB->execute($sql, $params);
 
         if (in_array($mmdd, $checkstops)) {
             \local_courseexpiry\locallib::notify_users($debug);
