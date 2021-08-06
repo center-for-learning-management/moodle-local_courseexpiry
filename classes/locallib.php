@@ -122,10 +122,10 @@ class locallib {
         }
         foreach ($deletecourses as $deletecourse) {
             if ($debug) {
-                echo "Remove course #$deletecourse->id<br />";
+                echo "Remove course #$deletecourse->courseid of entry #$deletecourse->id<br />";
             }
             \delete_course($deletecourse->courseid, false);
-            $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->id));
+            $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
         }
 
         if (in_array($mmdd, $checkstops)) {
