@@ -32,6 +32,6 @@ class task extends \core\task\scheduled_task {
     }
 
     public function execute() {
-        \local_courseexpiry\locallib::check_expiry(true);
+        \local_courseexpiry\locallib::check_expiry(true, true);
     }
 }

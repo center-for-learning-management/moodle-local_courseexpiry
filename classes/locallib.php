@@ -30,7 +30,7 @@ class locallib {
      * Checks for expired courses.
      * @param debug show debug output.
      */
-    public static function check_expiry($debug = false) {
+    public static function check_expiry($debug = false, $task = false) {
         global $DB;
 
         $sql = "SELECT id
@@ -52,14 +52,14 @@ class locallib {
             ));
         }
         if ($debug) {
-            echo "Added $cnt courses to local_courseexpiry<br />";
+            self::output("Added $cnt courses to local_courseexpiry", $task);
         }
 
         $checkstops = explode("\n", get_config('local_courseexpiry', 'checkstops'));
         $mmdd = date("md");
         if (in_array($mmdd, $checkstops)) {
             if ($debug) {
-                echo "Update local_courseexpiry and schedule deletion of expired courses<br />";
+                self::output("Update local_courseexpiry and schedule deletion of expired courses", $task);
             }
 
             $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
@@ -119,11 +119,11 @@ class locallib {
         );
         $deletecourses = $DB->get_records_sql($sql, $params);
         if ($debug) {
-            echo count($deletecourses) . " courses need to be deleted<br />";
+            self::output(count($deletecourses) . " courses need to be deleted", $task);
         }
         foreach ($deletecourses as $deletecourse) {
             if ($debug) {
-                echo "Remove course #$deletecourse->courseid of entry #$deletecourse->id<br />";
+                self::output("Remove course #$deletecourse->courseid of entry #$deletecourse->id", $task);
             }
             \delete_course($deletecourse->courseid, false);
             $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
@@ -186,6 +186,13 @@ class locallib {
             }
         }
         return $lasttimedelete;
+    }
+    private static function output($text, $task) {
+        if ($task) {
+            mtrace($text);
+        } else {
+            echo "$text<br />";
+        }
     }
     /**
      * Notifies all editingteachers about upcoming deletions.
