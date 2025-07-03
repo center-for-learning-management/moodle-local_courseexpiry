@@ -76,16 +76,24 @@ class locallib {
                 if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
                     continue;
                 }
+
+                $ignorecourse = false;
                 if (count($ignorecategories) > 0) {
                     $ctx = \context_course::instance($courseid);
                     // Remove courseid from path for comparison.
                     $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
                     foreach ($ignorecategories as $cat) {
                         if (strpos($path, '/' . $cat . '/')) {
-                            continue 2;
+                            $ignorecourse = true;
+                            break;
                         }
                     }
                 }
+
+                if ($ignorecourse) {
+                    continue;
+                }
+                
                 $expiredcourseids[] = $courseid;
             }
             if (count($expiredcourseids) > 0) {
