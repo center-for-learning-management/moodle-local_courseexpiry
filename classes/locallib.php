@@ -142,6 +142,7 @@ class locallib {
             \local_courseexpiry\locallib::notify_users($debug);
         }
     }
+
     /**
      * Return all courses of a user that are expired.
      */
@@ -149,7 +150,8 @@ class locallib {
         global $DB, $USER;
         $usercourses = \enrol_get_all_users_courses($USER->id, true);
 
-        if (count($usercourses) == 0) return $usercourses;
+        if (count($usercourses) == 0)
+            return $usercourses;
         $editingcourseids = array();
         foreach ($usercourses as $usercourse) {
             $ctx = \context_course::instance($usercourse->id);
@@ -170,6 +172,7 @@ class locallib {
         }
         return [];
     }
+
     /**
      * Get the timestamp when the last course will be deleted.
      * @param courses list of courses retrieved by self::get_expired_courses()
@@ -187,6 +190,7 @@ class locallib {
         }
         return $lasttimedelete;
     }
+
     private static function output($text, $task) {
         if ($task) {
             mtrace($text);
@@ -194,6 +198,7 @@ class locallib {
             echo "$text<br />";
         }
     }
+
     /**
      * Notifies all editingteachers about upcoming deletions.
      * @param debug show debug output.

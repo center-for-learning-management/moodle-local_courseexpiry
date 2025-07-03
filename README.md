@@ -1,4 +1,5 @@
 # moodle-local_courseexpiry
+
 This moodle plugin monitors all courses and schedules expired courses
 (identified by courses enddate) for deletion.
 

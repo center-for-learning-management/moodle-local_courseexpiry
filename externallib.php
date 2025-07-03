@@ -45,7 +45,7 @@ class local_courseexpiry_external extends external_api {
         );
 
         $ctx = \context_course::instance($params['courseid']);
-        if (in_array($params['status'], array(0,1)) && has_capability('moodle/course:update', $ctx, $USER, false)) {
+        if (in_array($params['status'], array(0, 1)) && has_capability('moodle/course:update', $ctx, $USER, false)) {
             $DB->set_field('local_courseexpiry', 'status', $params['status'], array('courseid' => $params['courseid']));
             $ret['courseid'] = $params['courseid'];
             $ret['status'] = $params['status'];
@@ -53,6 +53,7 @@ class local_courseexpiry_external extends external_api {
 
         return $ret;
     }
+
     /**
      * Return definition.
      * @return external_value

@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($hassiteconfig) {
     $ADMIN->add('localplugins', new admin_category('local_courseexpiry', get_string('pluginname', 'local_courseexpiry')));
-    $settings = new admin_settingpage( 'local_courseexpiry_settings', get_string('pluginname', 'local_courseexpiry'));
+    $settings = new admin_settingpage('local_courseexpiry_settings', get_string('pluginname', 'local_courseexpiry'));
 
     if ($ADMIN->fulltree) {
         // Set times in mmdd-Format when a notification should be sent.
