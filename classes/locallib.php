@@ -72,7 +72,7 @@ class locallib {
         $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
         $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
 
-        $sql = "SELECT *
+        $sql = "SELECT id, enddate, fullname
                     FROM {course}
                     WHERE enddate < ?
                     AND id > 1 -- ignore site course";
@@ -85,19 +85,6 @@ class locallib {
             }
 
             if (str_starts_with($course->fullname, 'Helpdesk') || str_starts_with($course->fullname, 'Digitaler Schulhof')) {
-                continue;
-            }
-
-            if (!$course->enddate) {
-                $ctx = \context_course::instance($course->id);
-                $users = \get_enrolled_users($ctx);
-                if ($users) {
-                    continue;
-                }
-
-                if ($debug) {
-                    self::output("Course #{$course->id} \"{$course->fullname}\" has no users and will be deleted in future versions, for now the course is ignored.", $task);
-                }
                 continue;
             }
 
@@ -116,6 +103,19 @@ class locallib {
 
             if ($ignorecourse) {
                 continue;
+            }
+
+            if (!$course->enddate) {
+                $ctx = \context_course::instance($course->id);
+                $users = \get_enrolled_users($ctx);
+                if ($users) {
+                    continue;
+                }
+
+                // if ($debug) {
+                //     self::output("Course #{$course->id} \"{$course->fullname}\" has no users and will be deleted in future versions, for now the course is ignored.", $task);
+                // }
+                // continue;
             }
 
             $expiredcourseids[] = $courseid;
@@ -177,6 +177,9 @@ class locallib {
             if ($debug) {
                 self::output("Remove course #$deletecourse->courseid of entry #$deletecourse->id", $task);
             }
+
+            die('TODO: kurs sichern!');
+
             \delete_course($deletecourse->courseid, false);
             $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
         }
