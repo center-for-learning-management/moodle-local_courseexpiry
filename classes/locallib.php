@@ -34,7 +34,7 @@ class locallib {
         global $DB;
 
         $debug = true;
-        $task = true;
+        $task = !$dryrun;
 
         $sql = "SELECT id
                     FROM {course}
@@ -72,15 +72,32 @@ class locallib {
         $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
         $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
 
-        $sql = "SELECT id
-                        FROM {course}
-                        WHERE enddate > 0
-                            AND enddate < ?";
+        $sql = "SELECT *
+                    FROM {course}
+                    WHERE enddate < ?
+                    AND id > 1 -- ignore site course";
 
-        $_expiredcourseids = array_keys($DB->get_records_sql($sql, array(time())));
+        $_expiredcourses = $DB->get_records_sql($sql, array(time()));
         $expiredcourseids = array();
-        foreach ($_expiredcourseids as $courseid) {
+        foreach ($_expiredcourses as $courseid => $course) {
             if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
+                continue;
+            }
+
+            if (str_starts_with($course->fullname, 'Helpdesk') || str_starts_with($course->fullname, 'Digitaler Schulhof')) {
+                continue;
+            }
+
+            if (!$course->enddate) {
+                $ctx = \context_course::instance($course->id);
+                $users = \get_enrolled_users($ctx);
+                if ($users) {
+                    continue;
+                }
+
+                if ($debug) {
+                    self::output("Course #{$course->id} \"{$course->fullname}\" has no users and will be deleted in future versions, for now the course is ignored.", $task);
+                }
                 continue;
             }
 
@@ -257,7 +274,7 @@ class locallib {
         $notified = array(); // keep notified users, we only notify each user once.
         $stringman = get_string_manager();
         foreach ($courses as $course) {
-            $ctx = \context_course::instance($course->courseid, 'IGNORE_MISSING');
+            $ctx = \context_course::instance($course->courseid);
             if (empty($ctx->id)) {
                 // This entry must have been kept by accident. Course has already been removed.
                 $DB->delete_records('local_courseexpiry', array('courseid' => $course->courseid));
