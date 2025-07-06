@@ -30,7 +30,7 @@ class locallib {
      * Checks for expired courses.
      * @param debug show debug output.
      */
-    public static function check_expiry($debug = false, $task = false) {
+    public static function check_expiry($debug = false, $task = false, $dryrun = false) {
         global $DB;
 
         $sql = "SELECT id
@@ -57,7 +57,7 @@ class locallib {
 
         $checkstops = explode("\n", get_config('local_courseexpiry', 'checkstops'));
         $mmdd = date("md");
-        if (in_array($mmdd, $checkstops)) {
+        if (in_array($mmdd, $checkstops) || $dryrun) {
             if ($debug) {
                 self::output("Update local_courseexpiry and schedule deletion of expired courses", $task);
             }
@@ -96,6 +96,11 @@ class locallib {
 
                 $expiredcourseids[] = $courseid;
             }
+
+            if ($dryrun) {
+                return $expiredcourseids;
+            }
+
             if (count($expiredcourseids) > 0) {
                 list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
                 $inparams = [
@@ -113,13 +118,17 @@ class locallib {
             }
         }
 
+        if ($dryrun) {
+            throw new \moodle_exception('should not happen');
+        }
+
         // Now select all courses that should be deleted.
         $sql = "SELECT *
                     FROM {local_courseexpiry}
                     WHERE status = ? AND timedelete < ?";
         $params = array(
             1,
-            time()
+            time(),
         );
         $deletecourses = $DB->get_records_sql($sql, $params);
         if ($debug) {
@@ -138,7 +147,7 @@ class locallib {
                     WHERE timedelete < ?
                         AND status = 0";
         $params = [
-            time()
+            time(),
         ];
         $DB->execute($sql, $params);
 
@@ -170,11 +179,31 @@ class locallib {
                         FROM {course} c, {local_courseexpiry} ce
                         WHERE c.id = ce.courseid
                             AND timedelete > 0
-                            AND c.id $insql";
+                            AND c.id $insql
+                        ORDER BY c.id";
             $courses = array_values($DB->get_records_sql($sql, $inparams));
             return $courses;
         }
         return [];
+    }
+
+    /**
+     * Check all moodle courses for expiry and return them
+     */
+    public static function get_expired_courses_admin(): array {
+        global $DB;
+
+        $courseids = static::check_expiry(dryrun: true);
+
+        list($insql, $inparams) = $DB->get_in_or_equal($courseids, onemptyitems: -1);
+        $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
+                        FROM {course} c, {local_courseexpiry} ce
+                        WHERE c.id = ce.courseid
+                            AND c.id $insql
+                        ORDER BY c.id";
+        $courses = array_values($DB->get_records_sql($sql, $inparams));
+
+        return $courses;
     }
 
     /**

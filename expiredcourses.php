@@ -33,9 +33,33 @@ $PAGE->navbar->add(get_string('expired_courses', 'local_courseexpiry'), $PAGE->u
 
 echo $OUTPUT->header();
 
-$courses = \local_courseexpiry\locallib::get_expired_courses();
+if (is_siteadmin()) {
+    $showall = optional_param('showall', 0, PARAM_BOOL);
+} else {
+    $showall = false;
+}
+
+if ($showall) {
+    $courses = \local_courseexpiry\locallib::get_expired_courses_admin();
+    foreach ($courses as $course) {
+        if (!$course->timedelete) {
+            // not yet marked for deletion, then set status to be deleted to 1 (to display the course as being deleted in the list).
+            $course->status = 1;
+        }
+    }
+} else {
+    $courses = \local_courseexpiry\locallib::get_expired_courses();
+}
+
 $lasttimedelete = \local_courseexpiry\locallib::get_lasttimedelete($courses);
 \set_user_preference('block_courseexpiry_minimizeuntil', $lasttimedelete);
+
+if (is_siteadmin() && !$showall) {
+    echo '<div class="mb-3">';
+    echo '<a href="' . new moodle_url('/local/courseexpiry/expiredcourses.php', array('showall' => 1)) . '" class="btn btn-secondary">' .
+        'Show all Moodle Courses' . '</a>';
+    echo '</div>';
+}
 
 $params = array(
     'courses' => $courses,

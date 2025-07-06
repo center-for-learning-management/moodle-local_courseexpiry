@@ -89,12 +89,20 @@
                             {{fullname}}
                         </a>
                     </td>
-                    <td class="timedelete">{{#userdate}} {{timedelete}}, %d. %B %Y {{/userdate}}</td>
+                    <td class="timedelete">
+                        {{#timedelete}}
+                            {{#userdate}} {{timedelete}}, %d. %B %Y {{/userdate}}
+                        {{/timedelete}}
+                        {{^timedelete}}
+                            {{! for admin list, this is a future deletion, which is not marked to delete yet }}
+                            Future deletion
+                        {{/timedelete}}
+                    </td>
                 </tr>
             {{/courses}}
             {{^courses}}
                 <tr>
-                    <td colspan="3">
+                    <td colspan="4">
                         {{#str}} listempty, local_courseexpiry {{/str}}
                     </td>
                 </tr>
