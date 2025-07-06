@@ -83,7 +83,7 @@ class locallib {
                     // Remove courseid from path for comparison.
                     $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
                     foreach ($ignorecategories as $cat) {
-                        if (strpos($path, '/' . $cat . '/')) {
+                        if (str_contains($path, '/' . $cat . '/')) {
                             $ignorecourse = true;
                             break;
                         }
@@ -93,21 +93,17 @@ class locallib {
                 if ($ignorecourse) {
                     continue;
                 }
-                
+
                 $expiredcourseids[] = $courseid;
             }
             if (count($expiredcourseids) > 0) {
                 list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
-                $inparams = array_merge(
-                    array(
-                        time(),
-                        strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
-                    ),
-                    $inparams,
-                    array(
-                        time()
-                    )
-                );
+                $inparams = [
+                    time(),
+                    strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
+                    ...$inparams,
+                    time(),
+                ];
                 $sql = "UPDATE {local_courseexpiry}
                             SET status = 1, timemodified = ?, timedelete = ?
                             WHERE courseid $insql
