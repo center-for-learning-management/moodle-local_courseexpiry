@@ -63,6 +63,7 @@ $string['status'] = 'Status';
 $string['scheduledremoval'] = 'Zur Löschung eingeplant';
 
 $string['task'] = 'Kurs-Ablauf Task';
+$string['task:delete_courses'] = 'Kurse löschen';
 $string['timedelete'] = 'Tag der Löschung';
 $string['timetodeletion'] = 'Zeit bis zur Löschung';
 $string['timetodeletion:description'] = 'Gibt die Anzahl an Wochen an, die vor der endgültigen Löschung abgewartet werden.';

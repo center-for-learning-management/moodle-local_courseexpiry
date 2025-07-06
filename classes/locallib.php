@@ -30,8 +30,11 @@ class locallib {
      * Checks for expired courses.
      * @param debug show debug output.
      */
-    public static function check_expiry($debug = false, $task = false, $dryrun = false) {
+    public static function check_expiry($dryrun = false) {
         global $DB;
+
+        $debug = true;
+        $task = true;
 
         $sql = "SELECT id
                     FROM {course}
@@ -57,70 +60,89 @@ class locallib {
 
         $checkstops = explode("\n", get_config('local_courseexpiry', 'checkstops'));
         $mmdd = date("md");
-        if (in_array($mmdd, $checkstops) || $dryrun) {
-            if ($debug) {
-                self::output("Update local_courseexpiry and schedule deletion of expired courses", $task);
-            }
+        if (!in_array($mmdd, $checkstops) && !$dryrun) {
+            self::output("Today is not a day to mark courses for deletion", $task);
+            return;
+        }
 
-            $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
-            $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
+        if ($debug) {
+            self::output("Update local_courseexpiry and schedule deletion of expired courses", $task);
+        }
 
-            $sql = "SELECT id
+        $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
+        $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
+
+        $sql = "SELECT id
                         FROM {course}
                         WHERE enddate > 0
                             AND enddate < ?";
 
-            $_expiredcourseids = array_keys($DB->get_records_sql($sql, array(time())));
-            $expiredcourseids = array();
-            foreach ($_expiredcourseids as $courseid) {
-                if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
-                    continue;
-                }
+        $_expiredcourseids = array_keys($DB->get_records_sql($sql, array(time())));
+        $expiredcourseids = array();
+        foreach ($_expiredcourseids as $courseid) {
+            if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
+                continue;
+            }
 
-                $ignorecourse = false;
-                if (count($ignorecategories) > 0) {
-                    $ctx = \context_course::instance($courseid);
-                    // Remove courseid from path for comparison.
-                    $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
-                    foreach ($ignorecategories as $cat) {
-                        if (str_contains($path, '/' . $cat . '/')) {
-                            $ignorecourse = true;
-                            break;
-                        }
+            $ignorecourse = false;
+            if (count($ignorecategories) > 0) {
+                $ctx = \context_course::instance($courseid);
+                // Remove courseid from path for comparison.
+                $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
+                foreach ($ignorecategories as $cat) {
+                    if (str_contains($path, '/' . $cat . '/')) {
+                        $ignorecourse = true;
+                        break;
                     }
                 }
-
-                if ($ignorecourse) {
-                    continue;
-                }
-
-                $expiredcourseids[] = $courseid;
             }
 
-            if ($dryrun) {
-                return $expiredcourseids;
+            if ($ignorecourse) {
+                continue;
             }
 
-            if (count($expiredcourseids) > 0) {
-                list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
-                $inparams = [
-                    time(),
-                    strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
-                    ...$inparams,
-                    time(),
-                ];
-                $sql = "UPDATE {local_courseexpiry}
+            $expiredcourseids[] = $courseid;
+        }
+
+        if ($dryrun) {
+            return $expiredcourseids;
+        }
+
+        if (count($expiredcourseids) > 0) {
+            list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
+            $inparams = [
+                time(),
+                strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
+                ...$inparams,
+                time(),
+            ];
+            $sql = "UPDATE {local_courseexpiry}
                             SET status = 1, timemodified = ?, timedelete = ?
                             WHERE courseid $insql
                                 AND timedelete < ?";
 
-                $DB->execute($sql, $inparams);
-            }
+            $DB->execute($sql, $inparams);
         }
 
-        if ($dryrun) {
-            throw new \moodle_exception('should not happen');
-        }
+        // Now remove the delete-flag of those entries, that should be kept instead of deleted.
+        // TODO: why?
+        $sql = "UPDATE {local_courseexpiry}
+                    SET timedelete = 0
+                    WHERE timedelete < ?
+                        AND status = 0";
+        $params = [
+            time(),
+        ];
+        $DB->execute($sql, $params);
+
+        static::notify_users($debug);
+    }
+
+    public static function delete_courses() {
+        global $DB;
+
+        $debug = true;
+        $task = true;
 
         // Now select all courses that should be deleted.
         $sql = "SELECT *
@@ -140,19 +162,6 @@ class locallib {
             }
             \delete_course($deletecourse->courseid, false);
             $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
-        }
-        // Now remove the delete-flag of those entries, that should be kept instead of deleted.
-        $sql = "UPDATE {local_courseexpiry}
-                    SET timedelete = 0
-                    WHERE timedelete < ?
-                        AND status = 0";
-        $params = [
-            time(),
-        ];
-        $DB->execute($sql, $params);
-
-        if (in_array($mmdd, $checkstops)) {
-            \local_courseexpiry\locallib::notify_users($debug);
         }
     }
 

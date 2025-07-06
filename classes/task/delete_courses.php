@@ -21,11 +21,17 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_courseexpiry\task;
+
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2025070600;
-$plugin->requires = 2014051200;
-$plugin->component = 'local_courseexpiry';
-$plugin->release = '1.2';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->dependencies = array();
+class delete_courses extends \core\task\scheduled_task {
+    public function get_name() {
+        // Shown in admin screens.
+        return get_string('task:delete_courses', 'local_courseexpiry');
+    }
+
+    public function execute() {
+        \local_courseexpiry\locallib::delete_courses();
+    }
+}

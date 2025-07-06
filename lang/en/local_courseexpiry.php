@@ -64,6 +64,7 @@ $string['status'] = 'Status';
 $string['scheduledremoval'] = 'Scheduled for removal';
 
 $string['task'] = 'Course Expiry Task';
+$string['task:delete_courses'] = 'Delete courses';
 $string['timedelete'] = 'Day of deletion';
 $string['timetodeletion'] = 'Time to deletion';
 $string['timetodeletion:description'] = 'Specifies how many weeks the task will wait before courses are really deleted.';

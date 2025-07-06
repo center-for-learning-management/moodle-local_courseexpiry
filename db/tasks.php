@@ -33,4 +33,14 @@ $tasks = array(
         'dayofweek' => '*',
         'month' => '*',
     ),
+    array(
+        'classname' => 'local_courseexpiry\task\delete_courses',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '7',
+        'day' => '0',
+        'dayofweek' => '0',
+        'month' => '0',
+        'disabled' => 1, // This task is disabled by default
+    ),
 );
