@@ -25,6 +25,8 @@ namespace local_courseexpiry;
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once ($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+
 class locallib {
     /**
      * Checks for expired courses.
@@ -155,8 +157,69 @@ class locallib {
         static::notify_users($debug);
     }
 
+    public static function backup_course($courseid, $backupdir): string {
+        global $DB, $USER;
+
+        // Ensure the backup directory exists
+        if (!is_dir($backupdir)) {
+            mkdir($backupdir, 0777, true);
+        }
+
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+        // Get the course category
+        $category = $DB->get_record('course_categories', ['id' => $course->category], '*', MUST_EXIST);
+        // Traverse up to the top-level category
+        while ($category->parent != 0) {
+            $category = $DB->get_record('course_categories', ['id' => $category->parent], '*', MUST_EXIST);
+        }
+
+        $clean = fn($string) => preg_replace('![^a-z0-9]+!i', '_', $string);
+
+        $parts = [
+            'course_backup',
+            'id',
+            $courseid,
+            'cat_idnumber',
+            $clean($category->idnumber ?: 'none'),
+            'cat_name',
+            $clean($category->name ?: 'none'),
+            'fullname',
+            $clean($course->fullname),
+            date('Ymd_His'),
+        ];
+
+        // Set the backup file name
+        $backupfile = $backupdir . '/' . join('-', $parts) . '.mbz';
+
+        // Create a backup controller
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $courseid,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_GENERAL,
+            $USER->id
+        );
+
+        // Execute the backup plan
+        $bc->execute_plan();
+
+        $results = $bc->get_results();
+        /* @var \stored_file $backupfile */
+        $stored_file = $results['backup_destination'];
+
+        $stored_file->copy_content_to($backupfile);
+        $stored_file->delete();
+
+        // Cleanup
+        $bc->destroy();
+
+        return $backupfile;
+    }
+
     public static function delete_courses() {
-        global $DB;
+        global $CFG, $DB;
 
         $debug = true;
         $task = true;
@@ -178,7 +241,7 @@ class locallib {
                 self::output("Remove course #$deletecourse->courseid of entry #$deletecourse->id", $task);
             }
 
-            die('TODO: kurs sichern!');
+            static::backup_course($deletecourse->courseid, $CFG->dataroot . '/local_courseexpiry-backups');
 
             \delete_course($deletecourse->courseid, false);
             $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
