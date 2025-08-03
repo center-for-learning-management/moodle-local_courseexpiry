@@ -70,3 +70,6 @@ $string['timetodeletion:description'] = 'Gibt die Anzahl an Wochen an, die vor d
 $string['timetodeletionweeks_immediate'] = 'Sofort';
 $string['timetodeletionweeks_single'] = '1 Woche';
 $string['timetodeletionweeks'] = '{$a->weeks} Wochen';
+
+$string['backupdir'] = 'Backup-Verzeichnis';
+$string['backupdir:description'] = 'Gibt das Verzeichnis an, in dem die Backups der Kurse gespeichert werden sollen.';

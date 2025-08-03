@@ -164,6 +164,12 @@ class locallib {
         if (!is_dir($backupdir)) {
             mkdir($backupdir, 0777, true);
         }
+        if (!is_dir($backupdir)) {
+            throw new \moodle_exception('backupdir could not be created', 'local_courseexpiry', '', $backupdir);
+        }
+        if (!is_writable($backupdir)) {
+            throw new \moodle_exception('backupdir not writable', 'local_courseexpiry', '', $backupdir);
+        }
 
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
@@ -241,7 +247,12 @@ class locallib {
                 self::output("Remove course #$deletecourse->courseid of entry #$deletecourse->id", $task);
             }
 
-            static::backup_course($deletecourse->courseid, $CFG->dataroot . '/local_courseexpiry-backups');
+            $backupdir = get_config('local_courseexpiry', 'backupdir');
+            if (!$backupdir) {
+                throw new \moodle_exception('config/backupdir not set', 'local_courseexpiry');
+            }
+
+            static::backup_course($deletecourse->courseid, $backupdir);
 
             \delete_course($deletecourse->courseid, false);
             $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));

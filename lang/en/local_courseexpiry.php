@@ -71,3 +71,6 @@ $string['timetodeletion:description'] = 'Specifies how many weeks the task will 
 $string['timetodeletionweeks_immediate'] = 'immediately';
 $string['timetodeletionweeks_single'] = '1 week';
 $string['timetodeletionweeks'] = '{$a->weeks} weeks';
+
+$string['backupdir'] = 'Backup directory';
+$string['backupdir:description'] = 'The directory where backups of courses are stored. This is used to restore courses that were deleted by this plugin.';

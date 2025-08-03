@@ -86,6 +86,16 @@ if ($hassiteconfig) {
                 PARAM_TEXT
             )
         );
+
+        $settings->add(
+            new admin_setting_configtext(
+                'local_courseexpiry/backupdir',
+                get_string('backupdir', 'local_courseexpiry'),
+                get_string('backupdir:description', 'local_courseexpiry'),
+                "",
+                PARAM_TEXT
+            )
+        );
     }
 
     $ADMIN->add('local_courseexpiry', $settings);
