@@ -23,8 +23,8 @@
 
 $string['pluginname'] = 'Kurs-Ablauflöschung';
 
-$string['checkstops'] = 'Prüftage';
-$string['checkstops:description'] = 'Gibt jene Tage an, an denen die Kurse auf ihr Ablaufdatum geprüft werden. Geben Sie mehrere Tage im Format mmdd zeilenweise ein.';
+// $string['checkstops'] = 'Prüftage';
+// $string['checkstops:description'] = 'Gibt jene Tage an, an denen die Kurse auf ihr Ablaufdatum geprüft werden. Geben Sie mehrere Tage im Format mmdd zeilenweise ein.';
 
 $string['delete'] = 'Löschen';
 
@@ -62,8 +62,13 @@ $string['notify:html'] = '
 $string['status'] = 'Status';
 $string['scheduledremoval'] = 'Zur Löschung eingeplant';
 
-$string['task'] = 'Kurs-Ablauf Task';
+$string['task:check_courses'] = 'Kurse für Löschung markieren';
+$string['task:hide_courses'] = 'Kurse löschen';
 $string['task:delete_courses'] = 'Kurse löschen';
+$string['expire_time'] = 'Ablaufzeitpunkt';
+$string['expire_time:description'] = 'Kurse mit einem älteren Kursendedatum werden gelöscht.';
+$string['hide_courses_categoryid'] = 'Kursbereich für versteckte Kurse';
+$string['hide_courses_categoryid:description'] = 'Gibt die ID des Kursbereichs an, in dem die versteckten Kurse verschoben werden sollen, bevor sie gelöscht werden.';
 $string['timedelete'] = 'Tag der Löschung';
 $string['timetodeletion'] = 'Zeit bis zur Löschung';
 $string['timetodeletion:description'] = 'Gibt die Anzahl an Wochen an, die vor der endgültigen Löschung abgewartet werden.';

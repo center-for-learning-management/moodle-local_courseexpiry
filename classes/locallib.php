@@ -23,63 +23,40 @@
 
 namespace local_courseexpiry;
 
+use backup_controller;
+use backup;
+
 defined('MOODLE_INTERNAL') || die;
 
-require_once ($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+require_once($CFG->dirroot . '/course/lib.php');
 
 class locallib {
-    /**
-     * Checks for expired courses.
-     * @param debug show debug output.
-     */
-    public static function check_expiry($dryrun = false) {
+    static $is_task = false;
+
+    static function set_is_task(bool $is_task): void {
+        self::$is_task = $is_task;
+    }
+
+    public static function get_expired_courseids(): array {
         global $DB;
 
-        $debug = true;
-        $task = !$dryrun;
-
-        $sql = "SELECT id
-                    FROM {course}
-                    WHERE id NOT IN (
-                        SELECT courseid
-                            FROM {local_courseexpiry}
-                    )";
-        $newcourses = $DB->get_records_sql($sql, array());
-        $cnt = 0;
-        foreach ($newcourses as $newcourse) {
-            $cnt++;
-            $DB->insert_record('local_courseexpiry', array(
-                'courseid' => $newcourse->id,
-                'status' => 0,
-                'timecreated' => time(),
-                'timemodified' => time(),
-                'timedelete' => 0,
-            ));
-        }
-        if ($debug) {
-            self::output("Added $cnt courses to local_courseexpiry", $task);
+        $ignorecategories = array_filter(explode(',', get_config('local_courseexpiry', 'ignorecategories')));
+        $ignorecourses = array_filter(explode(',', get_config('local_courseexpiry', 'ignorecourses')));
+        $ignorecontexts = [];
+        foreach ($ignorecategories as $categoryid) {
+            try {
+                $ignorecontexts[$categoryid] = \context_coursecat::instance($categoryid)->path;
+            } catch (\moodle_exception $e) {
+                // Category does not exist, skip it.
+                continue;
+            }
         }
 
-        $checkstops = explode("\n", get_config('local_courseexpiry', 'checkstops'));
-        $mmdd = date("md");
-        if (!in_array($mmdd, $checkstops) && !$dryrun) {
-            self::output("Today is not a day to mark courses for deletion", $task);
-            return;
-        }
-
-        if ($debug) {
-            self::output("Update local_courseexpiry and schedule deletion of expired courses", $task);
-        }
-
-        $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
-        $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
-
-        $sql = "SELECT id, enddate, fullname
+        $_expiredcourses = $DB->get_records_sql("SELECT id, enddate, fullname
                     FROM {course}
                     WHERE enddate < ?
-                    AND id > 1 -- ignore site course";
-
-        $_expiredcourses = $DB->get_records_sql($sql, array(time()));
+                    AND id > 1 -- ignore site course", [static::get_expired_time()]);
         $expiredcourseids = array();
         foreach ($_expiredcourses as $courseid => $course) {
             if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
@@ -91,18 +68,16 @@ class locallib {
             }
 
             $ignorecourse = false;
-            if (count($ignorecategories) > 0) {
+            if (count($ignorecontexts) > 0) {
                 $ctx = \context_course::instance($courseid);
-                // Remove courseid from path for comparison.
-                $path = substr($ctx->path, 0, strrpos($ctx->path, '/')) . '/';
-                foreach ($ignorecategories as $cat) {
-                    if (str_contains($path, '/' . $cat . '/')) {
+
+                foreach ($ignorecontexts as $path) {
+                    if (str_starts_with($ctx->path, $path)) {
                         $ignorecourse = true;
                         break;
                     }
                 }
             }
-
             if ($ignorecourse) {
                 continue;
             }
@@ -123,41 +98,70 @@ class locallib {
             $expiredcourseids[] = $courseid;
         }
 
-        if ($dryrun) {
-            return $expiredcourseids;
+        return $expiredcourseids;
+    }
+
+    public static function check_expiry(): void {
+        global $DB;
+
+        $sql = "SELECT id
+            FROM {course}
+            WHERE id NOT IN (
+                SELECT courseid
+                    FROM {local_courseexpiry}
+            )";
+
+        $newcourses = $DB->get_records_sql($sql, array());
+        $cnt = 0;
+        foreach ($newcourses as $newcourse) {
+            $cnt++;
+            $DB->insert_record('local_courseexpiry', array(
+                'courseid' => $newcourse->id,
+                'status' => 0,
+                'timecreated' => time(),
+                'timemodified' => time(),
+                'timedelete' => 0,
+            ));
         }
 
+        self::output("Added $cnt courses to local_courseexpiry");
+
+        /*
+        $checkstops = explode("\n", get_config('local_courseexpiry', 'checkstops'));
+        $mmdd = date("md");
+        if (!in_array($mmdd, $checkstops) && !$dryrun) {
+            self::output("Today is not a day to mark courses for deletion");
+            return;
+        }
+        */
+
+        $expiredcourseids = static::get_expired_courseids();
+
         if (count($expiredcourseids) > 0) {
+            self::output("Update local_courseexpiry and schedule deletion of expired courses");
+
             list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
             $inparams = [
                 time(),
                 strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
                 ...$inparams,
-                time(),
             ];
             $sql = "UPDATE {local_courseexpiry}
                             SET status = 1, timemodified = ?, timedelete = ?
-                            WHERE courseid $insql
-                                AND timedelete < ?";
+                            WHERE status=0 AND courseid $insql";
 
             $DB->execute($sql, $inparams);
         }
 
-        // Now remove the delete-flag of those entries, that should be kept instead of deleted.
-        // TODO: why?
+        self::output("Mark running/future courses as not deleted");
+        [$courseid_sql, $courseid_params] = $DB->get_in_or_equal($expiredcourseids, equal: false, onemptyitems: null);
         $sql = "UPDATE {local_courseexpiry}
-                    SET timedelete = 0
-                    WHERE timedelete < ?
-                        AND status = 0";
-        $params = [
-            time(),
-        ];
-        $DB->execute($sql, $params);
-
-        static::notify_users($debug);
+            SET status = 0, timemodified = ?, timedelete = 0, timeusersnotified = 0
+            WHERE status=1 AND courseid $courseid_sql";
+        $DB->execute($sql, [time(), ...$courseid_params]);
     }
 
-    public static function backup_course($courseid, $backupdir): string {
+    public static function backup_course(object $course, string $backupdir): string {
         global $DB, $USER;
 
         // Ensure the backup directory exists
@@ -171,8 +175,6 @@ class locallib {
             throw new \moodle_exception('backupdir not writable', 'local_courseexpiry', '', $backupdir);
         }
 
-        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-
         // Get the course category
         $category = $DB->get_record('course_categories', ['id' => $course->category], '*', MUST_EXIST);
         // Traverse up to the top-level category
@@ -180,18 +182,20 @@ class locallib {
             $category = $DB->get_record('course_categories', ['id' => $category->parent], '*', MUST_EXIST);
         }
 
-        $clean = fn($string) => preg_replace('![^a-z0-9]+!i', '_', $string);
+        $clean = fn($string) => trim(substr(preg_replace('![^a-z0-9]+!i', '_', $string), 0, 40), '_');
+
+        $extra_title = 'Wird gelöscht: ';
 
         $parts = [
             'course_backup',
-            'id',
-            $courseid,
+            'courseid',
+            $course->id,
             'cat_idnumber',
             $clean($category->idnumber ?: 'none'),
             'cat_name',
             $clean($category->name ?: 'none'),
             'fullname',
-            $clean($course->fullname),
+            $clean(str_replace($extra_title, '', $course->fullname)),
             date('Ymd_His'),
         ];
 
@@ -201,7 +205,7 @@ class locallib {
         // Create a backup controller
         $bc = new backup_controller(
             backup::TYPE_1COURSE,
-            $courseid,
+            $course->id,
             backup::FORMAT_MOODLE,
             backup::INTERACTIVE_NO,
             backup::MODE_GENERAL,
@@ -221,53 +225,117 @@ class locallib {
         // Cleanup
         $bc->destroy();
 
+        if (!is_file($backupfile)) {
+            throw new \moodle_exception('backupfile not created', 'local_courseexpiry', '', $backupfile);
+        }
+
         return $backupfile;
+    }
+
+    public static function hide_courses() {
+        global $DB;
+
+        $hide_courses_category = $DB->get_record('course_categories', ['id' => get_config('local_courseexpiry', 'hide_courses_categoryid')], '*', MUST_EXIST);
+
+        // Now select all courses that should be deleted.
+        $items = $DB->get_records_sql("SELECT expiry.*
+            FROM {local_courseexpiry} expiry
+            JOIN {course} c ON expiry.courseid = c.id
+            WHERE expiry.status = 1 AND expiry.keep=0 AND expiry.timedelete < ?", [time()]);
+
+        self::output(count($items) . " courses need to be hidden, moving them to category {$hide_courses_category->id} ({$hide_courses_category->name})");
+
+        $extra_title = 'Wird gelöscht: ';
+
+        foreach ($items as $item) {
+            self::output("Hide course #$item->courseid of entry #$item->id");
+
+            $course = get_course($item->courseid);
+            if ($course->category != $hide_courses_category->id) {
+                // remember old category
+                $DB->set_field('local_courseexpiry', 'original_categoryid', $course->category, ['id' => $item->id]);
+
+                $course->category = $hide_courses_category->id;
+                update_course($course);
+            }
+
+            if (!str_starts_with($course->fullname, $extra_title)) {
+                $course->fullname = $extra_title . $course->fullname;
+            }
+            // hide the course
+            $course->visible = false;
+            $DB->update_record('course', $course);
+
+            rebuild_course_cache($course->id);
+        }
     }
 
     public static function delete_courses() {
         global $CFG, $DB;
 
-        $debug = true;
-        $task = true;
-
         // Now select all courses that should be deleted.
-        $sql = "SELECT *
-                    FROM {local_courseexpiry}
-                    WHERE status = ? AND timedelete < ?";
-        $params = array(
-            1,
-            time(),
-        );
-        $deletecourses = $DB->get_records_sql($sql, $params);
-        if ($debug) {
-            self::output(count($deletecourses) . " courses need to be deleted", $task);
+        $items = $DB->get_records_sql("SELECT expiry.*
+            FROM {local_courseexpiry} expiry
+            JOIN {course} c ON expiry.courseid = c.id
+            WHERE expiry.status = 1 AND expiry.keep=0 AND expiry.timedelete < ?", [time()]);
+
+        self::output(count($items) . " courses need to be deleted");
+
+        $hide_courses_category = $DB->get_record('course_categories', ['id' => get_config('local_courseexpiry', 'hide_courses_categoryid')], '*', MUST_EXIST);
+
+        $backupdir = get_config('local_courseexpiry', 'backupdir');
+        if (!$backupdir) {
+            throw new \moodle_exception('config/backupdir not set', 'local_courseexpiry');
         }
-        foreach ($deletecourses as $deletecourse) {
-            if ($debug) {
-                self::output("Remove course #$deletecourse->courseid of entry #$deletecourse->id", $task);
+
+        foreach ($items as $item) {
+            self::output("Remove course #$item->courseid of entry #$item->id");
+
+            $course = get_course($item->courseid);
+            if ($course->visible) {
+                self::output("Course #$item->courseid is still visible, skipping deletion.");
+                continue;
+            }
+            if ($course->category != $hide_courses_category->id) {
+                self::output("Course #$item->courseid is not in the hidden category, skipping deletion.");
+                continue;
             }
 
-            $backupdir = get_config('local_courseexpiry', 'backupdir');
-            if (!$backupdir) {
-                throw new \moodle_exception('config/backupdir not set', 'local_courseexpiry');
+            // use the original course categoryid
+            $course->category = $item->original_categoryid;
+
+            static::backup_course($course, $backupdir);
+
+            if (!empty($CFG->developermode)) {
+                self::output("Moodle is in developer mode, skipping deletion.");
+                continue;
             }
 
-            static::backup_course($deletecourse->courseid, $backupdir);
-
-            \delete_course($deletecourse->courseid, false);
-            $DB->delete_records('local_courseexpiry', array('courseid' => $deletecourse->courseid));
+            \delete_course($item->courseid, false);
+            $DB->delete_records('local_courseexpiry', array('courseid' => $item->courseid));
         }
+    }
+
+    public static function get_expired_time(): int {
+        $time = strtotime(get_config('local_courseexpiry', 'expire_time'));
+        if (!$time) {
+            throw new \moodle_exception('config/expire_time not set or wrong format', 'local_courseexpiry');
+        }
+
+        return $time;
     }
 
     /**
      * Return all courses of a user that are expired.
      */
-    public static function get_expired_courses() {
+    public static function get_expired_courses_teacher(): array {
         global $DB, $USER;
         $usercourses = \enrol_get_all_users_courses($USER->id, true);
 
-        if (count($usercourses) == 0)
-            return $usercourses;
+        if (!$usercourses) {
+            return [];
+        }
+
         $editingcourseids = array();
         foreach ($usercourses as $usercourse) {
             $ctx = \context_course::instance($usercourse->id);
@@ -276,35 +344,17 @@ class locallib {
             }
         }
 
-        if (count($editingcourseids) > 0) {
-            list($insql, $inparams) = $DB->get_in_or_equal($editingcourseids);
-            $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
-                        FROM {course} c, {local_courseexpiry} ce
-                        WHERE c.id = ce.courseid
-                            AND timedelete > 0
-                            AND c.id $insql
-                        ORDER BY c.id";
-            $courses = array_values($DB->get_records_sql($sql, $inparams));
-            return $courses;
+        if (!$editingcourseids) {
+            return [];
         }
-        return [];
-    }
 
-    /**
-     * Check all moodle courses for expiry and return them
-     */
-    public static function get_expired_courses_admin(): array {
-        global $DB;
-
-        $courseids = static::check_expiry(dryrun: true);
-
-        list($insql, $inparams) = $DB->get_in_or_equal($courseids, onemptyitems: -1);
-        $sql = "SELECT c.id,c.fullname,ce.status,ce.timedelete
-                        FROM {course} c, {local_courseexpiry} ce
-                        WHERE c.id = ce.courseid
-                            AND c.id $insql
-                        ORDER BY c.id";
-        $courses = array_values($DB->get_records_sql($sql, $inparams));
+        [$insql, $inparams] = $DB->get_in_or_equal($editingcourseids);
+        $sql = "SELECT c.id
+                FROM {course} c
+                JOIN {local_courseexpiry} ce ON c.id = ce.courseid
+                WHERE ce.status=1
+                    AND c.id $insql";
+        $courses = $DB->get_records_sql($sql, $inparams);
 
         return $courses;
     }
@@ -313,11 +363,9 @@ class locallib {
      * Get the timestamp when the last course will be deleted.
      * @param courses list of courses retrieved by self::get_expired_courses()
      */
-    public static function get_lasttimedelete($courses = array()) {
+    public static function get_lasttimedelete($courses) {
         $lasttimedelete = 0;
-        if (count($courses) == 0) {
-            $courses = self::get_expired_courses();
-        }
+        $courses = self::get_expired_courses_teacher();
 
         foreach ($courses as $course) {
             if ($lasttimedelete < $course->timedelete) {
@@ -327,8 +375,8 @@ class locallib {
         return $lasttimedelete;
     }
 
-    private static function output($text, $task) {
-        if ($task) {
+    private static function output(string $text) {
+        if (static::$is_task) {
             mtrace($text);
         } else {
             echo "$text<br />";
@@ -337,16 +385,13 @@ class locallib {
 
     /**
      * Notifies all editingteachers about upcoming deletions.
-     * @param debug show debug output.
      */
-    public static function notify_users($debug = false) {
+    public static function notify_users() {
         global $CFG, $DB;
-        if ($debug) {
-            echo "Notify users.<br />";
-        }
+        static::output("Notify users");
 
         $timetodeletionweeks = get_config('local_courseexpiry', 'timetodeletionweeks');
-        $courses = $DB->get_records('local_courseexpiry', array('status' => 1));
+        $courses = $DB->get_records('local_courseexpiry', array('status' => 1, 'timeusersnotified' => 0));
         $fromuser = \core_user::get_support_user();
         $notified = array(); // keep notified users, we only notify each user once.
         $stringman = get_string_manager();
@@ -357,6 +402,7 @@ class locallib {
                 $DB->delete_records('local_courseexpiry', array('courseid' => $course->courseid));
                 continue;
             }
+
             $users = \get_enrolled_users($ctx, 'moodle/course:update');
             foreach ($users as $user) {
                 if (!in_array($user->id, $notified)) {
@@ -368,11 +414,11 @@ class locallib {
                     $messagehtml = $stringman->get_string('notify:html', 'local_courseexpiry', $user, $user->lang);
                     $messagetext = \html_to_text($messagehtml);
                     \email_to_user($user, $fromuser, $subject, $messagetext, $messagehtml, "", true);
-                    if ($debug) {
-                        echo "=> Sent notification to user $user->fullname<br />";
-                    }
+                    static::output("=> Sent notification to user $user->fullname");
                 }
             }
+
+            $DB->update_record('local_courseexpiry', array('courseid' => $course->courseid, 'timeusersnotified' => time()));
         }
     }
 }

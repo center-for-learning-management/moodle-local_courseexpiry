@@ -3,33 +3,24 @@ define(
   function ($, AJAX, NOTIFICATION) {
     return {
       debug: false,
-      toggle: function (uniqid, courseid, action) {
+      toggle: function (el, courseid, action) {
         var MAIN = this;
-        if (MAIN.debug) console.log('local_courseexpiry/main:toggle(uniqid, courseid, action)', uniqid, courseid, action);
+        if (MAIN.debug) console.log('local_courseexpiry/main:toggle(el, courseid, action)', el, courseid, action);
 
+        $(el).css('color', 'lightgray');
 
-        var a = $('#local_courseexpiry_' + uniqid + ' #tr-' + uniqid + '-' + courseid + ' a i').css('color', 'lightgray');
+        var check = $('<i class="fa fa-square" style="color: darkgray;"></i>');
+        var checksquare = $('<i class="fa fa-check-square" style="color: black;"></i>');
+        $(el).empty().append(checksquare);
 
-        var setto = (action == 'keep') ? 0 : 1;
-        if (MAIN.debug) console.log('setto', setto);
+        // uncheck the other one
+        $(el).closest('tr').find('.expiredcourse-toggler').not(el).empty().append(check);
+
         AJAX.call([{
           methodname: 'local_courseexpiry_toggle',
-          args: {'courseid': courseid, 'status': setto},
+          args: {'courseid': courseid, 'keep': (action == 'keep' ? 1 : 0 /* convert to int, because moodle doesn't allow boolean parameters in call */)},
           done: function (result) {
-            if (MAIN.debug) console.log('=> Result for ' + uniqid + '-' + courseid, result);
-            if (typeof result.courseid !== 'undefined' && result.courseid == courseid) {
-              var check = $('<i class="fa fa-square" style="color: darkgray;"></i>');
-              var checksquare = $('<i class="fa fa-check-square" style="color: black;"></i>');
-              setTimeout(function () {
-                if (result.status == 1) {
-                  $('#status-' + uniqid + '-' + courseid + '-delete').empty().append(checksquare);
-                  $('#status-' + uniqid + '-' + courseid + '-keep').empty().append(check);
-                } else {
-                  $('#status-' + uniqid + '-' + courseid + '-delete').empty().append(check);
-                  $('#status-' + uniqid + '-' + courseid + '-keep').empty().append(checksquare);
-                }
-              }, 500);
-            }
+            table_sql_reload();
           },
           fail: NOTIFICATION.exception
         }]);

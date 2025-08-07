@@ -25,15 +25,15 @@ namespace local_courseexpiry\task;
 
 defined('MOODLE_INTERNAL') || die;
 
-class delete_courses extends \core\task\scheduled_task {
+class hide_courses extends \core\task\scheduled_task {
     public function get_name() {
         // Shown in admin screens.
-        return get_string('task:delete_courses', 'local_courseexpiry');
+        return get_string('task:hide_courses', 'local_courseexpiry');
     }
 
     public function execute() {
         \local_courseexpiry\locallib::set_is_task(true);
         \local_courseexpiry\locallib::check_expiry();
-        \local_courseexpiry\locallib::delete_courses();
+        \local_courseexpiry\locallib::hide_courses();
     }
 }

@@ -24,8 +24,8 @@
 $string['pluginname'] = 'Course Expiry';
 $string['privacy:metadata'] = 'This plugin does not store any personal data';
 
-$string['checkstops'] = 'Checkstops';
-$string['checkstops:description'] = 'Specifies dates when courses should be checked for expiry. Enter line by line in mmdd-format.';
+// $string['checkstops'] = 'Checkstops';
+// $string['checkstops:description'] = 'Specifies dates when courses should be checked for expiry. Enter line by line in mmdd-format.';
 
 $string['delete'] = 'Delete';
 
@@ -63,8 +63,13 @@ $string['notify:html'] = '
 $string['status'] = 'Status';
 $string['scheduledremoval'] = 'Scheduled for removal';
 
-$string['task'] = 'Course Expiry Task';
+$string['task:check_courses'] = 'Mark courses for deletion';
+$string['task:hide_courses'] = 'Hide courses';
 $string['task:delete_courses'] = 'Delete courses';
+$string['expire_time'] = 'Course end date';
+$string['expire_time:description'] = 'Specifies the time when a course is considered expired. This is used to determine when a course should be marked for deletion.';
+$string['hide_courses_categoryid'] = 'Hide courses category ID';
+$string['hide_courses_categoryid:description'] = 'This is the category ID where courses will be moved to when they are hidden.';
 $string['timedelete'] = 'Day of deletion';
 $string['timetodeletion'] = 'Time to deletion';
 $string['timetodeletion:description'] = 'Specifies how many weeks the task will wait before courses are really deleted.';

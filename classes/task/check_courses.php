@@ -25,13 +25,16 @@ namespace local_courseexpiry\task;
 
 defined('MOODLE_INTERNAL') || die;
 
-class task extends \core\task\scheduled_task {
+class check_courses extends \core\task\scheduled_task {
     public function get_name() {
         // Shown in admin screens.
-        return get_string('task', 'local_courseexpiry');
+        return get_string('task:check_courses', 'local_courseexpiry');
     }
 
     public function execute() {
+        \local_courseexpiry\locallib::set_is_task(true);
         \local_courseexpiry\locallib::check_expiry();
+        \local_courseexpiry\locallib::notify_users();
+
     }
 }

@@ -25,13 +25,24 @@ defined('MOODLE_INTERNAL') || die;
 
 $tasks = array(
     array(
-        'classname' => 'local_courseexpiry\task\task',
+        'classname' => 'local_courseexpiry\task\check_courses',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '7',
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*',
+        'disabled' => 1, // This task is disabled by default
+    ),
+    array(
+        'classname' => 'local_courseexpiry\task\hide_courses',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '7',
+        'day' => '0',
+        'dayofweek' => '0',
+        'month' => '0',
+        'disabled' => 1, // This task is disabled by default
     ),
     array(
         'classname' => 'local_courseexpiry\task\delete_courses',

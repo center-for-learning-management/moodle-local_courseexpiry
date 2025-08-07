@@ -1,24 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/courseexpiry/db" VERSION="20200300" COMMENT="XMLDB file for Moodle local/courseexpiry"
+<XMLDB PATH="local/courseexpiry/db" VERSION="20250807" COMMENT="XMLDB file for Moodle local/courseexpiry"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
     <TABLE NAME="local_courseexpiry" COMMENT="List of expired courses">
-        <FIELDS>
-          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true" COMMENT="expirationid"/>
-          <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="courseid"/>
-          <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="false" COMMENT="0 ... skipped, 1 ... expired"/>
-          <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="timecreated"/>
-          <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="timemodified"/>
-          <FIELD NAME="timedelete" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="timedelete"/>
-        </FIELDS>
-        <KEYS>
-          <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        </KEYS>
-        <INDEXES>
-          <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid"/>
-        </INDEXES>
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true" COMMENT="expirationid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="courseid"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="0 ... skipped, 1 ... expired"/>
+        <FIELD NAME="keep" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="timecreated"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="timemodified"/>
+        <FIELD NAME="timeusersnotified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timedelete" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="timedelete"/>
+        <FIELD NAME="original_categoryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

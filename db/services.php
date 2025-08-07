@@ -29,7 +29,7 @@ $functions = array(
         'classname' => 'local_courseexpiry_external',
         'methodname' => 'toggle',
         'classpath' => 'local/courseexpiry/externallib.php',
-        'description' => 'Toggles deleteion status of course.',
+        'description' => 'Toggles deletion status of course.',
         'type' => 'write',
         'ajax' => 1,
     ),

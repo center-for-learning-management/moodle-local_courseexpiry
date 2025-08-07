@@ -29,29 +29,25 @@ class local_courseexpiry_external extends external_api {
     public static function toggle_parameters() {
         return new external_function_parameters(array(
             'courseid' => new external_value(PARAM_INT, 'the course id'),
-            'status' => new external_value(PARAM_INT, '1 or 0'),
+            'keep' => new external_value(PARAM_INT, '1 or 0'),
         ));
     }
 
     /**
-     * Toggle status.
+     * Toggle keep status.
      */
-    public static function toggle($courseid, $status) {
-        global $DB, $USER;
-        $params = self::validate_parameters(self::toggle_parameters(), array('courseid' => $courseid, 'status' => $status));
-        $ret = array(
-            'courseid' => 0,
-            'status' => 0,
-        );
+    public static function toggle($courseid, $keep) {
+        global $DB;
+        $params = self::validate_parameters(self::toggle_parameters(), array('courseid' => $courseid, 'keep' => $keep));
 
         $ctx = \context_course::instance($params['courseid']);
-        if (in_array($params['status'], array(0, 1)) && has_capability('moodle/course:update', $ctx, $USER, false)) {
-            $DB->set_field('local_courseexpiry', 'status', $params['status'], array('courseid' => $params['courseid']));
-            $ret['courseid'] = $params['courseid'];
-            $ret['status'] = $params['status'];
+        if (in_array($params['keep'], array(0, 1)) && has_capability('moodle/course:update', $ctx)) {
+            $DB->set_field('local_courseexpiry', 'keep', $params['keep'], array('courseid' => $params['courseid']));
+
+            return ['success' => true];
         }
 
-        return $ret;
+        return ['success' => false];
     }
 
     /**
@@ -60,8 +56,7 @@ class local_courseexpiry_external extends external_api {
      */
     public static function toggle_returns() {
         return new external_single_structure(array(
-            'courseid' => new external_value(PARAM_INT, 'courseid or 0 if failed'),
-            'status' => new external_value(PARAM_INT, 'current status'),
+            'success' => new external_value(PARAM_BOOL),
         ));
     }
 }
