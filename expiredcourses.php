@@ -131,7 +131,8 @@ $table = new expiredcourses_table($showall, $courses);
 
 echo $OUTPUT->header();
 
-if ($showall) {
+if ($showall && !empty($CFG->developermode)) {
+    // only run on local dev, on production this is too slow and done by the scheduled task
     \local_courseexpiry\locallib::check_expiry();
 }
 
