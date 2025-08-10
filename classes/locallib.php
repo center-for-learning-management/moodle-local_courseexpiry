@@ -394,7 +394,7 @@ class locallib {
         static::output("Notify users");
 
         $timetodeletionweeks = get_config('local_courseexpiry', 'timetodeletionweeks');
-        $courses = $DB->get_records('local_courseexpiry', array('status' => 1, 'timeusersnotified' => 0));
+        $courses = $DB->get_records('local_courseexpiry', array('status' => 1, 'keep' => 0, 'timeusersnotified' => 0));
         $fromuser = \core_user::get_support_user();
         $notified = array(); // keep notified users, we only notify each user once.
         $stringman = get_string_manager();

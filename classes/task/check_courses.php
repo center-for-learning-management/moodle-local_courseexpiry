@@ -35,6 +35,5 @@ class check_courses extends \core\task\scheduled_task {
         \local_courseexpiry\locallib::set_is_task(true);
         \local_courseexpiry\locallib::check_expiry();
         \local_courseexpiry\locallib::notify_users();
-
     }
 }
