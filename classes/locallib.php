@@ -159,6 +159,9 @@ class locallib {
             SET status = 0, timemodified = ?, timedelete = 0, timeusersnotified = 0
             WHERE status=1 AND courseid $courseid_sql";
         $DB->execute($sql, [time(), ...$courseid_params]);
+
+        // delete old course_expiry entries
+        $DB->execute('DELETE FROM {local_courseexpiry} WHERE courseid NOT IN (SELECT id FROM {course})');
     }
 
     public static function backup_course(object $course, string $backupdir): string {
@@ -397,12 +400,6 @@ class locallib {
         $stringman = get_string_manager();
         foreach ($courses as $course) {
             $ctx = \context_course::instance($course->courseid);
-            if (empty($ctx->id)) {
-                // This entry must have been kept by accident. Course has already been removed.
-                $DB->delete_records('local_courseexpiry', array('courseid' => $course->courseid));
-                continue;
-            }
-
             $users = \get_enrolled_users($ctx, 'moodle/course:update');
             foreach ($users as $user) {
                 if (!in_array($user->id, $notified)) {
@@ -418,7 +415,7 @@ class locallib {
                 }
             }
 
-            $DB->update_record('local_courseexpiry', array('courseid' => $course->courseid, 'timeusersnotified' => time()));
+            $DB->update_record('local_courseexpiry', array('id' => $course->id, 'timeusersnotified' => time()));
         }
     }
 }
