@@ -74,11 +74,15 @@ if ($hassiteconfig) {
             $ranges
         ));
 
+        // nicht notwendig?!?
+        // falls doch, dann gehört das in die upgrade.php oder wo anders hin
+        /*
         $ignorecategories = explode(',', get_config('local_courseexpiry', 'ignorecategories'));
         sort($ignorecategories);
         if (is_array($ignorecategories) && count($ignorecategories) > 0) {
             set_config('local_courseexpiry', 'ignorecategories', implode(',', $ignorecategories));
         }
+        */
         $settings->add(new admin_setting_configtextarea(
             'local_courseexpiry/ignorecategories',
             get_string('ignorecategories', 'local_courseexpiry'),
@@ -86,11 +90,15 @@ if ($hassiteconfig) {
             "",
             PARAM_TEXT
         ));
+        // nicht notwendig?!?
+        // falls doch, dann gehört das in die upgrade.php oder wo anders hin
+        /*
         $ignorecourses = explode(',', get_config('local_courseexpiry', 'ignorecourses'));
         sort($ignorecourses);
         if (is_array($ignorecourses) && count($ignorecourses) > 0) {
             set_config('local_courseexpiry', 'ignorecourses', implode(',', $ignorecourses));
         }
+        */
         $settings->add(new admin_setting_configtextarea(
             'local_courseexpiry/ignorecourses',
             get_string('ignorecourses', 'local_courseexpiry'),
