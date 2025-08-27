@@ -22,7 +22,7 @@
  */
 
 require_once('../../config.php');
-require_login();
+local_courseexpiry\permissions::require_login();
 
 $PAGE->set_context(\context_system::instance());
 $PAGE->set_url('/local/courseexpiry/expiredcourses.php', array());
