@@ -250,8 +250,11 @@ class locallib {
 
         $extra_title = 'Wird gelöscht: ';
 
+        $item_cnt = count($items);
+        $item_i = 0;
         foreach ($items as $item) {
-            self::output("Hide course #$item->courseid of entry #$item->id");
+            $item_i++;
+            self::output("{$item_i}/{$item_cnt}: Hide course #$item->courseid of entry #$item->id");
 
             $course = get_course($item->courseid);
             if ($course->category != $hide_courses_category->id) {
@@ -265,6 +268,7 @@ class locallib {
             if (!str_starts_with($course->fullname, $extra_title)) {
                 $course->fullname = $extra_title . $course->fullname;
             }
+
             // hide the course
             $course->visible = false;
             $DB->update_record('course', $course);
