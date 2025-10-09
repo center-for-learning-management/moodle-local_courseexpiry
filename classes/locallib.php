@@ -356,11 +356,10 @@ class locallib {
         }
 
         [$insql, $inparams] = $DB->get_in_or_equal($editingcourseids);
-        $sql = "SELECT c.id
+        $sql = "SELECT c.id, ce.timedelete
                 FROM {course} c
                 JOIN {local_courseexpiry} ce ON c.id = ce.courseid
-                WHERE ce.status=1
-                    AND c.id $insql";
+                WHERE ce.status=1";
         $courses = $DB->get_records_sql($sql, $inparams);
 
         return $courses;
