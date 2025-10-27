@@ -242,6 +242,8 @@ class locallib {
         $timenotified = strtotime('-' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week');
 
         // Now select all courses that should be deleted.
+        // Prüfung auf timedelete ist eigentlich nicht notwendig?
+        // wichtig ist Prüfung auf timeusernotified, damit erst nach X Wochen nach der Info Email der Kurs gelöscht wird
         $items = $DB->get_records_sql("SELECT expiry.*
             FROM {local_courseexpiry} expiry
             JOIN {course} c ON expiry.courseid = c.id
@@ -252,7 +254,7 @@ class locallib {
 
         self::output(count($items) . " courses need to be hidden, moving them to category {$hide_courses_category->id} ({$hide_courses_category->name})");
 
-        $extra_title = 'Wird gelöscht: ';
+        $extra_title = 'Wird versteckt/verschoben: ';
 
         $item_cnt = count($items);
         $item_i = 0;
