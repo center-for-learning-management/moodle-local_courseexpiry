@@ -239,12 +239,16 @@ class locallib {
         global $DB;
 
         $hide_courses_category = $DB->get_record('course_categories', ['id' => get_config('local_courseexpiry', 'hide_courses_categoryid')], '*', MUST_EXIST);
+        $timenotified = strtotime('-' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week');
 
         // Now select all courses that should be deleted.
         $items = $DB->get_records_sql("SELECT expiry.*
             FROM {local_courseexpiry} expiry
             JOIN {course} c ON expiry.courseid = c.id
-            WHERE expiry.status = 1 AND expiry.keep=0 AND expiry.timedelete < ?", [time()]);
+            WHERE expiry.status = 1 AND expiry.keep=0 AND expiry.timeusersnotified>0 AND expiry.timeusersnotified<? AND expiry.timedelete < ?", [
+            $timenotified,
+            time(),
+        ]);
 
         self::output(count($items) . " courses need to be hidden, moving them to category {$hide_courses_category->id} ({$hide_courses_category->name})");
 
