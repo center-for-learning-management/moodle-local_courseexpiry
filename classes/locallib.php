@@ -247,14 +247,16 @@ class locallib {
         $items = $DB->get_records_sql("SELECT expiry.*
             FROM {local_courseexpiry} expiry
             JOIN {course} c ON expiry.courseid = c.id
-            WHERE expiry.status = 1 AND expiry.keep=0 AND expiry.timeusersnotified>0 AND expiry.timeusersnotified<? AND expiry.timedelete < ?", [
+            WHERE expiry.status = 1 AND expiry.keep=0 AND expiry.timeusersnotified>0 AND expiry.timeusersnotified<? AND expiry.timedelete < ?
+            ORDER BY c.id
+        ", [
             $timenotified,
             time(),
         ]);
 
         self::output(count($items) . " courses need to be hidden, moving them to category {$hide_courses_category->id} ({$hide_courses_category->name})");
 
-        $extra_title = 'Wird versteckt/verschoben: ';
+        $extra_title = 'Wird gelöscht: ';
 
         $item_cnt = count($items);
         $item_i = 0;
@@ -263,23 +265,56 @@ class locallib {
             self::output("{$item_i}/{$item_cnt}: Hide course #$item->courseid of entry #$item->id");
 
             $course = get_course($item->courseid);
+            $rebuild_cache = false;
+            $update_course = false;
+
+            // kein verschieben mehr, weil das zu lange dauert
+            // auf eduvidual bei 60k Kurse dauert das 72 Stunden!
+            /*
             if ($course->category != $hide_courses_category->id) {
+                self::output('move course to backup category');
+
                 // remember old category
                 $DB->set_field('local_courseexpiry', 'original_categoryid', $course->category, ['id' => $item->id]);
 
                 $course->category = $hide_courses_category->id;
-                update_course($course);
+                try {
+                    update_course($course);
+                } catch (\moodle_exception $e) {
+                    self::output('Error: ' . $e->getMessage());
+                    continue;
+                }
+
+                $rebuild_cache = true;
             }
+            */
 
             if (!str_starts_with($course->fullname, $extra_title)) {
                 $course->fullname = $extra_title . $course->fullname;
+                $update_course = true;
             }
 
-            // hide the course
-            $course->visible = false;
-            $DB->update_record('course', $course);
+            if ($course->visible) {
+                // hide the course
+                $course->visible = false;
+                $update_course = true;
+            }
 
-            rebuild_course_cache($course->id);
+            if ($update_course) {
+                self::output('update course');
+                $DB->update_record('course', $course);
+
+                echo 'New course name: ' . $course->fullname."\n";
+
+                $rebuild_cache = true;
+            } else {
+                echo 'course name: ' . $course->fullname . "\n";
+            }
+
+            if ($rebuild_cache) {
+                self::output('rebuild cache');
+                rebuild_course_cache($course->id);
+            }
         }
     }
 
@@ -365,7 +400,8 @@ class locallib {
         $sql = "SELECT c.id, ce.timedelete
                 FROM {course} c
                 JOIN {local_courseexpiry} ce ON c.id = ce.courseid
-                WHERE ce.status=1";
+                WHERE ce.status=1
+                    AND c.id $insql";
         $courses = $DB->get_records_sql($sql, $inparams);
 
         return $courses;
