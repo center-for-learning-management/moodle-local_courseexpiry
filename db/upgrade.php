@@ -45,4 +45,6 @@ function xmldb_local_courseexpiry_upgrade($oldversion) {
         // Courseexpiry savepoint reached.
         upgrade_plugin_savepoint(true, 2025080701, 'local', 'courseexpiry');
     }
+
+    return true;
 }

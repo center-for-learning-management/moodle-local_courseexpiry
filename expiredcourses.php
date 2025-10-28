@@ -41,8 +41,6 @@ if ($showall) {
     $courses = null;
 } else {
     $courses = \local_courseexpiry\locallib::get_expired_courses_teacher();
-    $lasttimedelete = \local_courseexpiry\locallib::get_lasttimedelete($courses);
-    \set_user_preference('block_courseexpiry_minimizeuntil', $lasttimedelete);
 }
 
 class expiredcourses_table extends \local_table_sql\table_sql {
