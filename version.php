@@ -28,4 +28,4 @@ $plugin->requires = 2014051200;
 $plugin->component = 'local_courseexpiry';
 $plugin->release = '1.2';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->dependencies = array();
+$plugin->dependencies = [];

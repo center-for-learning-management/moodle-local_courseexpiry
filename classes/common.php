@@ -145,7 +145,6 @@ class db {
 }
 
 abstract class event extends \core\event\base {
-
     protected static function prepareData(array &$data): void {
         if (!isset($data['contextid'])) {
             if (!empty($data['courseid'])) {
@@ -268,7 +267,7 @@ class lang {
         }
     }
 
-    static protected function _check_identifier($string) {
+    protected static function _check_identifier($string) {
         if (preg_match('!^([^:]+):(.*)$!s', $string, $matches)) {
             return $matches;
         } else {
@@ -276,13 +275,13 @@ class lang {
         }
     }
 
-    static protected function _parse_string($string, $a) {
+    protected static function _parse_string($string, $a) {
         // copy from moodle/lib/classes/string_manager_standard.php
         // Process array's and objects (except lang_strings).
         if (is_array($a) or (is_object($a) && !($a instanceof \lang_string))) {
             $a = (array)$a;
-            $search = array();
-            $replace = array();
+            $search = [];
+            $replace = [];
             foreach ($a as $key => $value) {
                 if (is_int($key)) {
                     // We do not support numeric keys - sorry!
@@ -327,7 +326,7 @@ class param {
         }
 
         // some value => type
-        $ret = new \stdClass;
+        $ret = new \stdClass();
         $values = (object)$values;
         $definition = (array)$definition;
 
@@ -346,7 +345,7 @@ class param {
         if (is_object($values)) {
             $values = (array)$values;
         } else if (!is_array($values)) {
-            return array();
+            return [];
         }
 
         $keyType = key($definition);
@@ -361,7 +360,7 @@ class param {
             throw new moodle_exception('wrong key type: ' . $keyType);
         }
 
-        $ret = array();
+        $ret = [];
         foreach ($values as $key => $value) {
             $value = static::_clean($value, $valueType);
             if ($value === null) {
@@ -420,7 +419,7 @@ class param {
     public static function optional_array($parname, $definition) {
         $param = static::get_param($parname, $definition);
         if ($param === null) {
-            return array();
+            return [];
         } else {
             return $param;
         }

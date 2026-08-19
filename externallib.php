@@ -27,10 +27,10 @@ require_once($CFG->libdir . "/externallib.php");
 
 class local_courseexpiry_external extends external_api {
     public static function toggle_parameters() {
-        return new external_function_parameters(array(
+        return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'the course id'),
             'keep' => new external_value(PARAM_INT, '1 or 0'),
-        ));
+        ]);
     }
 
     /**
@@ -38,11 +38,11 @@ class local_courseexpiry_external extends external_api {
      */
     public static function toggle($courseid, $keep) {
         global $DB;
-        $params = self::validate_parameters(self::toggle_parameters(), array('courseid' => $courseid, 'keep' => $keep));
+        $params = self::validate_parameters(self::toggle_parameters(), ['courseid' => $courseid, 'keep' => $keep]);
 
         $ctx = \context_course::instance($params['courseid']);
-        if (in_array($params['keep'], array(0, 1)) && has_capability('moodle/course:update', $ctx)) {
-            $DB->set_field('local_courseexpiry', 'keep', $params['keep'], array('courseid' => $params['courseid']));
+        if (in_array($params['keep'], [0, 1]) && has_capability('moodle/course:update', $ctx)) {
+            $DB->set_field('local_courseexpiry', 'keep', $params['keep'], ['courseid' => $params['courseid']]);
 
             return ['success' => true];
         }
@@ -55,8 +55,8 @@ class local_courseexpiry_external extends external_api {
      * @return external_value
      */
     public static function toggle_returns() {
-        return new external_single_structure(array(
+        return new external_single_structure([
             'success' => new external_value(PARAM_BOOL),
-        ));
+        ]);
     }
 }
