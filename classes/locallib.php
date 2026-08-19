@@ -57,7 +57,7 @@ class locallib {
                     FROM {course}
                     WHERE enddate < ?
                     AND id > 1 -- ignore site course", [static::get_expired_time()]);
-        $expiredcourseids = array();
+        $expiredcourseids = [];
         foreach ($_expiredcourses as $courseid => $course) {
             if (count($ignorecourses) > 0 && in_array($courseid, $ignorecourses)) {
                 continue;
@@ -111,17 +111,17 @@ class locallib {
                     FROM {local_courseexpiry}
             )";
 
-        $newcourses = $DB->get_records_sql($sql, array());
+        $newcourses = $DB->get_records_sql($sql, []);
         $cnt = 0;
         foreach ($newcourses as $newcourse) {
             $cnt++;
-            $DB->insert_record('local_courseexpiry', array(
+            $DB->insert_record('local_courseexpiry', [
                 'courseid' => $newcourse->id,
                 'status' => 0,
                 'timecreated' => time(),
                 'timemodified' => time(),
                 'timedelete' => 0,
-            ));
+            ]);
         }
 
         self::output("Added $cnt courses to local_courseexpiry");
@@ -140,7 +140,7 @@ class locallib {
         if (count($expiredcourseids) > 0) {
             self::output("Update local_courseexpiry and schedule deletion of expired courses");
 
-            list($insql, $inparams) = $DB->get_in_or_equal($expiredcourseids);
+            [$insql, $inparams] = $DB->get_in_or_equal($expiredcourseids);
             $inparams = [
                 time(),
                 strtotime('+' . get_config('local_courseexpiry', 'timetodeletionweeks') . ' week'),
@@ -304,7 +304,7 @@ class locallib {
                 self::output('update course');
                 $DB->update_record('course', $course);
 
-                echo 'New course name: ' . $course->fullname."\n";
+                echo 'New course name: ' . $course->fullname . "\n";
 
                 $rebuild_cache = true;
             } else {
@@ -360,7 +360,7 @@ class locallib {
             }
 
             \delete_course($item->courseid, false);
-            $DB->delete_records('local_courseexpiry', array('courseid' => $item->courseid));
+            $DB->delete_records('local_courseexpiry', ['courseid' => $item->courseid]);
         }
     }
 
@@ -384,7 +384,7 @@ class locallib {
             return [];
         }
 
-        $editingcourseids = array();
+        $editingcourseids = [];
         foreach ($usercourses as $usercourse) {
             $ctx = \context_course::instance($usercourse->id);
             if (has_capability('moodle/course:update', $ctx, $USER, false)) {
@@ -439,9 +439,9 @@ class locallib {
         static::output("Notify users");
 
         $timetodeletionweeks = get_config('local_courseexpiry', 'timetodeletionweeks');
-        $courses = $DB->get_records('local_courseexpiry', array('status' => 1, 'keep' => 0, 'timeusersnotified' => 0));
+        $courses = $DB->get_records('local_courseexpiry', ['status' => 1, 'keep' => 0, 'timeusersnotified' => 0]);
         $fromuser = \core_user::get_support_user();
-        $notified = array(); // keep notified users, we only notify each user once.
+        $notified = []; // keep notified users, we only notify each user once.
         $stringman = get_string_manager();
         foreach ($courses as $course) {
             $ctx = \context_course::instance($course->courseid);
@@ -460,7 +460,7 @@ class locallib {
                 }
             }
 
-            $DB->update_record('local_courseexpiry', array('id' => $course->id, 'timeusersnotified' => time()));
+            $DB->update_record('local_courseexpiry', ['id' => $course->id, 'timeusersnotified' => time()]);
         }
     }
 }

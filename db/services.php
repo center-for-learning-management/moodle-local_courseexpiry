@@ -24,13 +24,13 @@
 defined('MOODLE_INTERNAL') || die;
 
 // We define the web service functions to install.
-$functions = array(
-    'local_courseexpiry_toggle' => array(
+$functions = [
+    'local_courseexpiry_toggle' => [
         'classname' => 'local_courseexpiry_external',
         'methodname' => 'toggle',
         'classpath' => 'local/courseexpiry/externallib.php',
         'description' => 'Toggles deletion status of course.',
         'type' => 'write',
         'ajax' => 1,
-    ),
-);
+    ],
+];
