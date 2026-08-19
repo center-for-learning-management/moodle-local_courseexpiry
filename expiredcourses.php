@@ -25,7 +25,7 @@ require_once('../../config.php');
 local_courseexpiry\permissions::require_login();
 
 $PAGE->set_context(\context_system::instance());
-$PAGE->set_url('/local/courseexpiry/expiredcourses.php', array());
+$PAGE->set_url('/local/courseexpiry/expiredcourses.php', []);
 $PAGE->set_title(get_string('expired_courses', 'local_courseexpiry'));
 $PAGE->set_heading(get_string('expired_courses', 'local_courseexpiry'));
 
@@ -136,7 +136,7 @@ if ($showall && !empty($CFG->developermode)) {
 
 if (is_siteadmin() && !$showall) {
     echo '<div class="mb-3">';
-    echo '<a href="' . new moodle_url('/local/courseexpiry/expiredcourses.php', array('showall' => 1)) . '" class="btn btn-secondary">' .
+    echo '<a href="' . new moodle_url('/local/courseexpiry/expiredcourses.php', ['showall' => 1]) . '" class="btn btn-secondary">' .
         'Show all Moodle Courses' . '</a>';
     echo '</div>';
 }

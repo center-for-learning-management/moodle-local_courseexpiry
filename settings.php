@@ -59,11 +59,11 @@ if ($hassiteconfig) {
         ));
 
         // Set parameter how long teachers have time to opt out from deletion.
-        $ranges = array();
+        $ranges = [];
         $ranges[0] = get_string('timetodeletionweeks_immediate', 'local_courseexpiry');
         $ranges[1] = get_string('timetodeletionweeks_single', 'local_courseexpiry');
         for ($a = 2; $a < 10; $a++) {
-            $ranges[$a] = get_string('timetodeletionweeks', 'local_courseexpiry', array('weeks' => $a));
+            $ranges[$a] = get_string('timetodeletionweeks', 'local_courseexpiry', ['weeks' => $a]);
         }
 
         $settings->add(new admin_setting_configselect(
